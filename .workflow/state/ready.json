@@ -1,19 +1,51 @@
 {
-  "lastUpdated": "2026-02-23T17:11:53.118Z",
-  "ready": [],
+  "lastUpdated": "2026-02-23T18:20:00.000Z",
+  "ready": [
+    {
+      "id": "wf-conversation-module",
+      "title": "Create Conversation module with CRUD",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-data-layer",
+      "tags": ["#domain", "#conversation", "#crud"]
+    },
+    {
+      "id": "wf-message-module",
+      "title": "Create Message module with CRUD",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-data-layer",
+      "tags": ["#domain", "#message", "#crud"]
+    },
+    {
+      "id": "wf-participant-module",
+      "title": "Create Participant module with management endpoints",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-data-layer",
+      "tags": ["#domain", "#participant", "#crud"]
+    }
+  ],
   "inProgress": [],
   "blocked": [],
   "recentlyCompleted": [
+    {
+      "id": "wf-prisma-models",
+      "title": "Create Prisma models for chat domain",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-data-layer",
+      "tags": ["#domain", "#prisma", "#database"],
+      "status": "completed",
+      "completedAt": "2026-02-23T18:20:00.000Z"
+    },
     {
       "id": "wf-49745460",
       "title": "Align tsconfig module system with reference",
       "type": "refactor",
       "priority": "P3",
       "feature": "ft-27ad4502",
-      "tags": [
-        "#infrastructure",
-        "#config"
-      ],
+      "tags": ["#infrastructure", "#config"],
       "status": "completed",
       "completedAt": "2026-02-23T17:11:53.117Z"
     },
@@ -23,98 +55,38 @@
       "type": "refactor",
       "priority": "P3",
       "feature": "ft-27ad4502",
-      "tags": [
-        "#infrastructure",
-        "#tooling"
-      ],
+      "tags": ["#infrastructure", "#tooling"],
       "status": "completed",
       "completedAt": "2026-02-23T17:12:00.000Z"
-    },
-    {
-      "id": "wf-fa3de969",
-      "title": "Create LocalApiProperty decorator",
-      "type": "feature",
-      "priority": "P3",
-      "feature": "ft-37e277e7",
-      "tags": [
-        "#infrastructure",
-        "#decorators"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T17:08:00.000Z"
-    },
-    {
-      "id": "wf-607119a1",
-      "title": "Set up Prisma with PostgreSQL and split schema pattern",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-cab4f180",
-      "tags": [
-        "#infrastructure",
-        "#prisma",
-        "#database"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T16:45:00.000Z"
-    },
-    {
-      "id": "wf-fce9b3c6",
-      "title": "Add docker-compose for PostgreSQL",
-      "type": "feature",
-      "priority": "P2",
-      "feature": "ft-cab4f180",
-      "tags": [
-        "#infrastructure",
-        "#docker"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T16:35:00.000Z"
-    },
-    {
-      "id": "wf-d4b6a59f",
-      "title": "Create custom exception classes",
-      "type": "feature",
-      "priority": "P2",
-      "feature": "ft-37e277e7",
-      "tags": [
-        "#infrastructure",
-        "#error-handling"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T16:24:27.575Z"
-    },
-    {
-      "id": "wf-4d288338",
-      "title": "Add global ValidationPipe with class-validator",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-37e277e7",
-      "tags": [
-        "#infrastructure",
-        "#validation"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T16:12:40.094Z"
-    },
-    {
-      "id": "wf-f548c77a",
-      "title": "Add Swagger documentation setup",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-37e277e7",
-      "tags": [
-        "#infrastructure",
-        "#swagger"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T15:54:46.815Z"
-    },
-    {
-      "id": "wf-cfbf29f1",
-      "title": "Switch HTTP adapter from Express to Fastify",
-      "type": "refactor",
-      "completedAt": "2026-02-23T16:10:00.000Z"
     }
   ],
-  "backlog": []
+  "backlog": [
+    {
+      "id": "wf-websocket-gateway",
+      "title": "Create WebSocket gateway for real-time messaging",
+      "type": "feature",
+      "priority": "P2",
+      "feature": "ft-realtime",
+      "tags": ["#domain", "#websocket", "#realtime"],
+      "blockedBy": ["wf-message-module"]
+    },
+    {
+      "id": "wf-read-receipts",
+      "title": "Add read receipts tracking",
+      "type": "feature",
+      "priority": "P2",
+      "feature": "ft-advanced",
+      "tags": ["#domain", "#read-receipts"],
+      "blockedBy": ["wf-websocket-gateway"]
+    },
+    {
+      "id": "wf-typing-presence",
+      "title": "Add typing indicators and online presence",
+      "type": "feature",
+      "priority": "P2",
+      "feature": "ft-advanced",
+      "tags": ["#domain", "#typing", "#presence"],
+      "blockedBy": ["wf-websocket-gateway"]
+    }
+  ]
 }

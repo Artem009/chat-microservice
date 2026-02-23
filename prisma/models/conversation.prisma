@@ -1,0 +1,18 @@
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+model Conversation {
+  id        String           @id @default(uuid())
+  title     String?
+  type      ConversationType @default(GROUP)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  deletedAt DateTime?
+
+  messages     Message[]
+  participants Participant[]
+
+  @@map("conversations")
+}

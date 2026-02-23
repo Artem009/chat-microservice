@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-012 | 2026-02-23
+**Type**: feature
+**Tags**: #domain #prisma #database
+**Request**: "Create Prisma models for chat domain (wf-prisma-models)"
+**Result**: Created 3 split Prisma schema files: conversation.prisma (Conversation model + ConversationType enum DIRECT/GROUP), message.prisma (Message model with FK to Conversation, indexes on conversationId and senderId), participant.prisma (Participant model + ParticipantRole enum ADMIN/MEMBER, unique constraint on [conversationId, userId]). All models follow conventions: UUID PKs, timestamps, @@map for snake_case tables, Cascade deletes. Migration 20260223173827_init_chat_models created. Unblocked 3 dependent tasks (wf-conversation-module, wf-message-module, wf-participant-module).
+**Files**: prisma/models/conversation.prisma, prisma/models/message.prisma, prisma/models/participant.prisma, prisma/schema.prisma, prisma/migrations/20260223173827_init_chat_models/migration.sql
+
+---
+
 ### R-011 | 2026-02-23
 **Type**: refactor
 **Tags**: #infrastructure #config
