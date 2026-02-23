@@ -1,17 +1,6 @@
 {
-  "lastUpdated": "2026-02-23T17:08:00.000Z",
+  "lastUpdated": "2026-02-23T17:12:00.000Z",
   "ready": [
-    {
-      "id": "wf-bc6bf0fb",
-      "title": "Install SWC compiler for faster builds",
-      "type": "refactor",
-      "priority": "P3",
-      "feature": "ft-27ad4502",
-      "tags": [
-        "#infrastructure",
-        "#tooling"
-      ]
-    },
     {
       "id": "wf-49745460",
       "title": "Align tsconfig module system with reference",
@@ -27,6 +16,19 @@
   "inProgress": [],
   "blocked": [],
   "recentlyCompleted": [
+    {
+      "id": "wf-bc6bf0fb",
+      "title": "Install SWC compiler for faster builds",
+      "type": "refactor",
+      "priority": "P3",
+      "feature": "ft-27ad4502",
+      "tags": [
+        "#infrastructure",
+        "#tooling"
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-23T17:12:00.000Z"
+    },
     {
       "id": "wf-fa3de969",
       "title": "Create LocalApiProperty decorator",

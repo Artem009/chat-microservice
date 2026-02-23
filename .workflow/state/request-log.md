@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-010 | 2026-02-23
+**Type**: refactor
+**Tags**: #infrastructure #tooling
+**Request**: "Install SWC compiler for faster builds (wf-bc6bf0fb)"
+**Result**: Installed @swc/cli@0.7.10 and @swc/core@1.15.13 as devDependencies. NestJS CLI auto-detects SWC for faster TypeScript compilation. Build, typecheck, lint, and all 17 tests pass.
+**Files**: package.json, package-lock.json
+
+---
+
 ### R-009 | 2026-02-23
 **Type**: feature
 **Tags**: #infrastructure #decorators
