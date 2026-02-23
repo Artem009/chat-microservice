@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-006 | 2026-02-23
+**Type**: feature
+**Tags**: #infrastructure #error-handling
+**Request**: "Create custom exception classes (wf-d4b6a59f)"
+**Result**: Created BadRequestException and NotFoundException extending HttpException with structured response format (message, error snake_case identifier, createdAt, optional additional fields). Added Error interface using `never` types to prevent overriding reserved fields. Barrel export via index.ts. 6 unit tests pass.
+**Files**: src/exeption/error-interface.ts, src/exeption/bad-request.exception.ts, src/exeption/not-found.exception.ts, src/exeption/index.ts, src/exeption/exeption.spec.ts
+
+---
+
 ### R-005 | 2026-02-23
 **Type**: feature
 **Tags**: #infrastructure #validation

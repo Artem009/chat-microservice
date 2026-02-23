@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-23T16:12:40.095Z",
+  "lastUpdated": "2026-02-23T16:24:27.576Z",
   "ready": [
     {
       "id": "wf-fce9b3c6",
@@ -10,17 +10,6 @@
       "tags": [
         "#infrastructure",
         "#docker"
-      ]
-    },
-    {
-      "id": "wf-d4b6a59f",
-      "title": "Create custom exception classes",
-      "type": "feature",
-      "priority": "P2",
-      "feature": "ft-37e277e7",
-      "tags": [
-        "#infrastructure",
-        "#error-handling"
       ]
     },
     {
@@ -72,9 +61,22 @@
         "#prisma",
         "#database"
       ]
-    },
+    }
   ],
   "recentlyCompleted": [
+    {
+      "id": "wf-d4b6a59f",
+      "title": "Create custom exception classes",
+      "type": "feature",
+      "priority": "P2",
+      "feature": "ft-37e277e7",
+      "tags": [
+        "#infrastructure",
+        "#error-handling"
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-23T16:24:27.575Z"
+    },
     {
       "id": "wf-4d288338",
       "title": "Add global ValidationPipe with class-validator",
