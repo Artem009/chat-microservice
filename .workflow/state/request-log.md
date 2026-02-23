@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-004 | 2026-02-23
+**Type**: feature
+**Tags**: #infrastructure #swagger
+**Request**: "Add Swagger documentation setup (wf-f548c77a)"
+**Result**: Installed @nestjs/swagger@11.2.6. Configured DocumentBuilder in main.ts with title "Chat microservice", API key security (authorization header), and SwaggerModule at /api-docs with persistAuthorization. All tests pass.
+**Files**: src/main.ts, package.json, package-lock.json
+
+---
+
 ### R-003 | 2026-02-23
 **Type**: refactor
 **Tags**: #infrastructure #fastify
