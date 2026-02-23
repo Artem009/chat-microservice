@@ -1,18 +1,6 @@
 {
-  "lastUpdated": "2026-02-23T16:35:00.000Z",
+  "lastUpdated": "2026-02-23T16:45:00.000Z",
   "ready": [
-    {
-      "id": "wf-607119a1",
-      "title": "Set up Prisma with PostgreSQL and split schema pattern",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-cab4f180",
-      "tags": [
-        "#infrastructure",
-        "#prisma",
-        "#database"
-      ]
-    },
     {
       "id": "wf-bc6bf0fb",
       "title": "Install SWC compiler for faster builds",
@@ -50,6 +38,20 @@
   "inProgress": [],
   "blocked": [],
   "recentlyCompleted": [
+    {
+      "id": "wf-607119a1",
+      "title": "Set up Prisma with PostgreSQL and split schema pattern",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-cab4f180",
+      "tags": [
+        "#infrastructure",
+        "#prisma",
+        "#database"
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-23T16:45:00.000Z"
+    },
     {
       "id": "wf-fce9b3c6",
       "title": "Add docker-compose for PostgreSQL",

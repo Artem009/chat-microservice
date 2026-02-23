@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-008 | 2026-02-23
+**Type**: feature
+**Tags**: #infrastructure #prisma #database
+**Request**: "Set up Prisma with PostgreSQL and split schema pattern (wf-607119a1)"
+**Result**: Installed prisma@6.19.2 and @prisma/client@6.19.2. Created split schema structure: prisma/base.prisma (generator + datasource), prisma/models/ directory, prisma/merge.ts script. Created PrismaService (extends PrismaClient, OnModuleInit/OnModuleDestroy) and PrismaModule (global provider). Added 6 NPM scripts (prisma:merge, prisma:generate, prisma:migrate:*). Integrated PrismaModule into AppModule. Note: Prisma 7 has breaking change for datasource URL config — used 6.x to match reference. Database Layer feature (ft-cab4f180) now 100% complete.
+**Files**: prisma/base.prisma, prisma/merge.ts, prisma/models/.gitkeep, src/prisma/prisma.service.ts, src/prisma/prisma.module.ts, src/prisma/prisma.spec.ts, src/app.module.ts, package.json, .env, .env.example, .gitignore
+
+---
+
 ### R-007 | 2026-02-23
 **Type**: feature
 **Tags**: #infrastructure #docker

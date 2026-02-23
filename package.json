@@ -17,7 +17,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prisma:merge": "ts-node prisma/merge.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:new": "prisma migrate dev --create-only --name",
+    "prisma:migrate:status": "prisma migrate status",
+    "prisma:migrate:apply": "prisma migrate deploy",
+    "prisma:short-cut:create": "npm run prisma:merge && npm run prisma:generate && npm run prisma:migrate:new"
   },
   "dependencies": {
     "@fastify/static": "^9.0.0",
@@ -26,6 +32,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-fastify": "^11.1.14",
     "@nestjs/swagger": "^11.2.6",
+    "@prisma/client": "^6.19.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "fastify": "^5.7.4",
@@ -49,6 +56,7 @@
     "globals": "^16.0.0",
     "jest": "^30.0.0",
     "prettier": "^3.4.2",
+    "prisma": "^6.19.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
