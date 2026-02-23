@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-23T16:45:00.000Z",
+  "lastUpdated": "2026-02-23T17:08:00.000Z",
   "ready": [
     {
       "id": "wf-bc6bf0fb",
@@ -22,7 +22,11 @@
         "#infrastructure",
         "#config"
       ]
-    },
+    }
+  ],
+  "inProgress": [],
+  "blocked": [],
+  "recentlyCompleted": [
     {
       "id": "wf-fa3de969",
       "title": "Create LocalApiProperty decorator",
@@ -32,12 +36,10 @@
       "tags": [
         "#infrastructure",
         "#decorators"
-      ]
-    }
-  ],
-  "inProgress": [],
-  "blocked": [],
-  "recentlyCompleted": [
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-23T17:08:00.000Z"
+    },
     {
       "id": "wf-607119a1",
       "title": "Set up Prisma with PostgreSQL and split schema pattern",

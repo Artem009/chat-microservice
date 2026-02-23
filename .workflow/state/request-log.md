@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-009 | 2026-02-23
+**Type**: feature
+**Tags**: #infrastructure #decorators
+**Request**: "Create LocalApiProperty decorator (wf-fa3de969)"
+**Result**: Created src/common/constants/mode.ts with ENV_MODE constant (LOCAL, INTEGRATED). Created src/common/decorators/local-api-property.decorator.ts using applyDecorators to compose IsString() with conditional ApiProperty() — only shows in Swagger when MODE=LOCAL. Matches reference project pattern exactly. 6 unit tests pass. Core API Infrastructure feature (ft-37e277e7) now 100% complete (5/5 stories).
+**Files**: src/common/constants/mode.ts, src/common/decorators/local-api-property.decorator.ts, src/common/decorators/local-api-property.spec.ts
+
+---
+
 ### R-008 | 2026-02-23
 **Type**: feature
 **Tags**: #infrastructure #prisma #database
