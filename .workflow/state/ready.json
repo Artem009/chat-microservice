@@ -1,17 +1,6 @@
 {
-  "lastUpdated": "2026-02-23T15:54:46.816Z",
+  "lastUpdated": "2026-02-23T16:12:40.095Z",
   "ready": [
-    {
-      "id": "wf-4d288338",
-      "title": "Add global ValidationPipe with class-validator",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-37e277e7",
-      "tags": [
-        "#infrastructure",
-        "#validation"
-      ]
-    },
     {
       "id": "wf-fce9b3c6",
       "title": "Add docker-compose for PostgreSQL",
@@ -55,6 +44,17 @@
         "#infrastructure",
         "#config"
       ]
+    },
+    {
+      "id": "wf-fa3de969",
+      "title": "Create LocalApiProperty decorator",
+      "type": "feature",
+      "priority": "P3",
+      "feature": "ft-37e277e7",
+      "tags": [
+        "#infrastructure",
+        "#decorators"
+      ]
     }
   ],
   "inProgress": [],
@@ -73,21 +73,21 @@
         "#database"
       ]
     },
-    {
-      "id": "wf-fa3de969",
-      "title": "Create LocalApiProperty decorator",
-      "type": "feature",
-      "priority": "P3",
-      "feature": "ft-37e277e7",
-      "blockedBy": "wf-4d288338",
-      "reason": "class-validator must be set up first (Swagger done)",
-      "tags": [
-        "#infrastructure",
-        "#decorators"
-      ]
-    }
   ],
   "recentlyCompleted": [
+    {
+      "id": "wf-4d288338",
+      "title": "Add global ValidationPipe with class-validator",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-37e277e7",
+      "tags": [
+        "#infrastructure",
+        "#validation"
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-23T16:12:40.094Z"
+    },
     {
       "id": "wf-f548c77a",
       "title": "Add Swagger documentation setup",

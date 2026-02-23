@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-005 | 2026-02-23
+**Type**: feature
+**Tags**: #infrastructure #validation
+**Request**: "Add global ValidationPipe with class-validator (wf-4d288338)"
+**Result**: Installed class-validator@0.14.3 and class-transformer@0.5.1. Configured global ValidationPipe in main.ts with whitelist, forbidNonWhitelisted, and transform options. All tests pass.
+**Files**: src/main.ts, package.json, package-lock.json
+
+---
+
 ### R-004 | 2026-02-23
 **Type**: feature
 **Tags**: #infrastructure #swagger
