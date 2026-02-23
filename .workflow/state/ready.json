@@ -1,14 +1,6 @@
 {
-  "lastUpdated": "2026-02-23T18:20:00.000Z",
+  "lastUpdated": "2026-02-23T18:35:00.000Z",
   "ready": [
-    {
-      "id": "wf-conversation-module",
-      "title": "Create Conversation module with CRUD",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-data-layer",
-      "tags": ["#domain", "#conversation", "#crud"]
-    },
     {
       "id": "wf-message-module",
       "title": "Create Message module with CRUD",
@@ -29,6 +21,16 @@
   "inProgress": [],
   "blocked": [],
   "recentlyCompleted": [
+    {
+      "id": "wf-conversation-module",
+      "title": "Create Conversation module with CRUD",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-data-layer",
+      "tags": ["#domain", "#conversation", "#crud"],
+      "status": "completed",
+      "completedAt": "2026-02-23T18:35:00.000Z"
+    },
     {
       "id": "wf-prisma-models",
       "title": "Create Prisma models for chat domain",

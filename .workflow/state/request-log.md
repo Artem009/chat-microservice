@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-013 | 2026-02-23
+**Type**: feature
+**Tags**: #domain #conversation #crud
+**Request**: "Create Conversation module with CRUD (wf-conversation-module)"
+**Result**: Created full conversation module following reference patterns: ConversationService with 5 CRUD methods delegating to PrismaService. 5 action controllers (create, list, get, update, delete) extending BaseController. DTOs with class-validator + @ApiProperty + @LocalApiProperty for currentUserId. POST creates conversation with sender as ADMIN + others as MEMBER. GET list filters by currentUserId participant. GET single includes participants + recent messages. DELETE uses soft delete (deletedAt). All endpoints follow { data } response envelope. 15 unit tests covering service + all controllers including NotFoundException cases. Wired into AppModule.
+**Files**: src/conversation/conversation.module.ts, src/conversation/conversation.service.ts, src/conversation/controllers/base.controller.ts, src/conversation/controllers/create-conversation.controller.ts, src/conversation/controllers/list-conversation.controller.ts, src/conversation/controllers/get-conversation.controller.ts, src/conversation/controllers/update-conversation.controller.ts, src/conversation/controllers/delete-conversation.controller.ts, src/conversation/dto/create-conversation.dto.ts, src/conversation/dto/update-conversation.dto.ts, src/conversation/conversation.spec.ts, src/app.module.ts
+
+---
+
 ### R-012 | 2026-02-23
 **Type**: feature
 **Tags**: #domain #prisma #database
