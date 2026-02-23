@@ -1,15 +1,16 @@
 {
-  "lastUpdated": "2026-02-23T16:24:27.576Z",
+  "lastUpdated": "2026-02-23T16:35:00.000Z",
   "ready": [
     {
-      "id": "wf-fce9b3c6",
-      "title": "Add docker-compose for PostgreSQL",
+      "id": "wf-607119a1",
+      "title": "Set up Prisma with PostgreSQL and split schema pattern",
       "type": "feature",
-      "priority": "P2",
+      "priority": "P1",
       "feature": "ft-cab4f180",
       "tags": [
         "#infrastructure",
-        "#docker"
+        "#prisma",
+        "#database"
       ]
     },
     {
@@ -47,23 +48,21 @@
     }
   ],
   "inProgress": [],
-  "blocked": [
+  "blocked": [],
+  "recentlyCompleted": [
     {
-      "id": "wf-607119a1",
-      "title": "Set up Prisma with PostgreSQL and split schema pattern",
+      "id": "wf-fce9b3c6",
+      "title": "Add docker-compose for PostgreSQL",
       "type": "feature",
-      "priority": "P1",
+      "priority": "P2",
       "feature": "ft-cab4f180",
-      "blockedBy": "wf-fce9b3c6",
-      "reason": "Docker PostgreSQL must be available first",
       "tags": [
         "#infrastructure",
-        "#prisma",
-        "#database"
-      ]
-    }
-  ],
-  "recentlyCompleted": [
+        "#docker"
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-23T16:35:00.000Z"
+    },
     {
       "id": "wf-d4b6a59f",
       "title": "Create custom exception classes",

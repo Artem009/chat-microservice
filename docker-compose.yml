@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  database:
+    image: postgres:17-alpine
+    container_name: chat-microservice-2
+    environment:
+      POSTGRES_DB: chatsDB
+      POSTGRES_USER: wogi-chat-admin
+      POSTGRES_PASSWORD: 3e8f2a7d5b1c94e0f6a3d8b7c2e5f1a09d4b6e8c3f7a2d5e1b9c4f6a8d3e7b02
+    ports:
+      - "5432:5432"

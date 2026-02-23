@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-007 | 2026-02-23
+**Type**: feature
+**Tags**: #infrastructure #docker
+**Request**: "Add docker-compose for PostgreSQL (wf-fce9b3c6)"
+**Result**: Created docker-compose.yml with postgres:17-alpine image, container name chat-microservice-2, database chatsDB on port 5432. Matches reference project pattern. Unblocked wf-607119a1 (Prisma setup).
+**Files**: docker-compose.yml
+
+---
+
 ### R-006 | 2026-02-23
 **Type**: feature
 **Tags**: #infrastructure #error-handling
