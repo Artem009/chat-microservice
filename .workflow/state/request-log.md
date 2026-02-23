@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-011 | 2026-02-23
+**Type**: refactor
+**Tags**: #infrastructure #config
+**Request**: "Align tsconfig module system with reference (wf-49745460)"
+**Result**: Changed module from nodenext to commonjs for cross-project consistency with reference. Added strict: true (enables noImplicitAny, strictBindCallApply, strictFunctionTypes, strictPropertyInitialization, etc.). Removed redundant individual strict flags. Removed moduleResolution: nodenext and resolvePackageJsonExports. Zero type errors — codebase was already well-typed. Build, typecheck, lint, and all 17 tests pass. Developer Tooling feature (ft-27ad4502) now 100% complete (2/2 stories). Plan pl-693271de now 100% complete (9/9 stories).
+**Files**: tsconfig.json
+
+---
+
 ### R-010 | 2026-02-23
 **Type**: refactor
 **Tags**: #infrastructure #tooling

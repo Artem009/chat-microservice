@@ -1,6 +1,9 @@
 {
-  "lastUpdated": "2026-02-23T17:12:00.000Z",
-  "ready": [
+  "lastUpdated": "2026-02-23T17:11:53.118Z",
+  "ready": [],
+  "inProgress": [],
+  "blocked": [],
+  "recentlyCompleted": [
     {
       "id": "wf-49745460",
       "title": "Align tsconfig module system with reference",
@@ -10,12 +13,10 @@
       "tags": [
         "#infrastructure",
         "#config"
-      ]
-    }
-  ],
-  "inProgress": [],
-  "blocked": [],
-  "recentlyCompleted": [
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-23T17:11:53.117Z"
+    },
     {
       "id": "wf-bc6bf0fb",
       "title": "Install SWC compiler for faster builds",

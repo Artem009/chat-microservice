@@ -8,10 +8,11 @@
 <!-- PIN: current-state -->
 **Status**: Maintenance (with accelerated development goal)
 **Codebase**: NestJS 11 scaffold (5 source files)
-**Module system**: `nodenext` (tsconfig) — differs from reference (`commonjs`)
-**HTTP adapter**: Express (default) — reference uses Fastify
-**Database**: Not configured — reference uses PostgreSQL + Prisma
-**Gaps**: 9 infrastructure gaps identified (see backlog tasks)
+**Module system**: `commonjs` (tsconfig) — aligned with reference
+**Strict mode**: `strict: true` — aligned with reference
+**HTTP adapter**: Fastify — aligned with reference
+**Database**: PostgreSQL + Prisma 6.19 with split schema pattern — aligned with reference
+**Plan**: pl-693271de complete (9/9 stories)
 
 <!-- PINS: architecture, modules, controllers, services, managers, dto, types, api-response, routing, prisma, exceptions, swagger, decorators, naming, validation, error-handling, testing, docker -->
 
