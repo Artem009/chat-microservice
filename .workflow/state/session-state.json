@@ -1,5 +1,5 @@
 {
-  "lastActive": "2026-02-23T15:47:03.503Z",
+  "lastActive": "2026-02-23T17:37:09.530Z",
   "cliSessionId": "6e7b23e6-6b57-40f6-9f4e-327d0c2f3afc",
   "currentTask": null,
   "recentFiles": [],
@@ -17,7 +17,7 @@
   },
   "lastSessionSummary": null,
   "bypassTracking": {
-    "count": 3,
+    "count": 8,
     "attempts": [
       {
         "timestamp": "2026-02-23T15:06:51.264Z",
@@ -36,6 +36,41 @@
       {
         "timestamp": "2026-02-23T15:08:28.781Z",
         "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/specs/stack.md",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-23T15:54:11.222Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/main.ts",
+        "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-23T16:21:47.350Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/exeption/error-interface.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-23T16:22:01.623Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/exeption/error-interface.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-23T16:56:22.482Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/common/decorators/local-api-property.decorator.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-23T16:57:57.726Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/common/decorators/local-api-property.spec.ts",
         "operation": "write",
         "reason": "no_task_auto_create_disabled",
         "taskId": null
