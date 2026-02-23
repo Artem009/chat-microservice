@@ -1,0 +1,60 @@
+{
+  "projectName": "chat-microservice-2",
+  "version": "1.0",
+  "stack": {
+    "platform": "Backend/API Only",
+    "focus": "backend",
+    "frontend": null,
+    "backend": "NestJS 11",
+    "database": "PostgreSQL",
+    "orm": "Prisma",
+    "stateManagement": null,
+    "forms": null,
+    "styling": null,
+    "testing": ["Jest", "Supertest"],
+    "httpAdapter": "Fastify",
+    "apiDocs": "Swagger",
+    "validation": "class-validator",
+    "compiler": "SWC"
+  },
+  "hooks": {
+    "rules": {
+      "taskGating": true,
+      "scopeValidation": true,
+      "loopEnforcement": true,
+      "autoLearn": true
+    }
+  },
+  "qualityGates": {
+    "feature": { "require": ["lint", "typecheck", "tests", "requestLogEntry", "appMapUpdate"] },
+    "bugfix": { "require": ["lint", "typecheck", "requestLogEntry"] },
+    "refactor": { "require": ["lint", "typecheck", "requestLogEntry"] },
+    "docs": { "require": ["requestLogEntry"] }
+  },
+  "commits": {
+    "requireApproval": { "feature": true, "bugfix": false, "refactor": true, "docs": false },
+    "autoCommitSmallFixes": true,
+    "smallFixThreshold": 3
+  },
+  "onboard": {
+    "temporal": {
+      "currentMonths": 6,
+      "transitionalMonths": 18,
+      "autoResolveThreshold": 0.7
+    }
+  },
+  "referenceProject": {
+    "name": "comment-microservice",
+    "importedAt": "2026-02-23",
+    "patternsImported": 22,
+    "conflictsResolved": 0
+  },
+  "project": {
+    "name": "chat-microservice-2",
+    "type": "Backend/API Only",
+    "state": "maintenance",
+    "goals": ["accelerate-development"],
+    "onboardedAt": "2026-02-23T00:00:00.000Z"
+  },
+  "createdAt": "2026-02-23T00:00:00.000Z"
+}

@@ -1,0 +1,46 @@
+{
+  "lastActive": "2026-02-23T15:47:03.503Z",
+  "cliSessionId": "6e7b23e6-6b57-40f6-9f4e-327d0c2f3afc",
+  "currentTask": null,
+  "recentFiles": [],
+  "recentDecisions": [],
+  "contextSnapshot": {
+    "keyFacts": [],
+    "inProgress": null,
+    "blockers": []
+  },
+  "metrics": {
+    "tasksCompleted": 0,
+    "filesModified": 0,
+    "errorsEncountered": 0,
+    "sessionCount": 0
+  },
+  "lastSessionSummary": null,
+  "bypassTracking": {
+    "count": 3,
+    "attempts": [
+      {
+        "timestamp": "2026-02-23T15:06:51.264Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/config.json",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-23T15:08:23.047Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/specs/product.md",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-23T15:08:28.781Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/specs/stack.md",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      }
+    ],
+    "autoCreatedTasks": []
+  }
+}

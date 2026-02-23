@@ -1,0 +1,20 @@
+{
+  "plans": {
+    "pl-693271de": {
+      "id": "pl-693271de",
+      "title": "Align chat-microservice-2 with reference architecture",
+      "epics": [],
+      "features": [
+        "ft-37e277e7",
+        "ft-cab4f180",
+        "ft-27ad4502"
+      ],
+      "status": "ready",
+      "progress": 0,
+      "createdAt": "2026-02-23T15:37:36.610Z",
+      "updatedAt": "2026-02-23T15:37:56.536Z"
+    }
+  },
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-23T15:37:56.536Z"
+}

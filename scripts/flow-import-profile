@@ -1,0 +1,893 @@
+#!/bin/bash
+
+# Wogi Flow - Import Profile
+# Import workflow configuration from team
+# v2.1: Enhanced with rules, learnings, and templates support
+
+set -e
+
+WORKFLOW_DIR=".workflow"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+DIM='\033[2m'
+NC='\033[0m'
+
+show_help() {
+    echo "Import Workflow Profile"
+    echo ""
+    echo "Usage: flow import-profile <profile.zip> [options]"
+    echo "       flow import-profile --scan <project-folder> [options]"
+    echo ""
+    echo "Options:"
+    echo "  --backup           Create backup of current config before importing"
+    echo "  --dry-run          Show what would be imported without making changes"
+    echo "  --force            Overwrite without confirmation"
+    echo "  --skip-learnings   Don't import learnings (feedback-patterns, skill learnings)"
+    echo "  --skip-rules       Don't import rules (.claude/rules/)"
+    echo "  --skip-templates   Don't import templates"
+    echo ""
+    echo "Scan Mode:"
+    echo "  --scan <folder>       Scan another project folder for patterns"
+    echo "  --strict              Enable strict adherence mode (follow source 100%)"
+    echo "  --resolve-conflicts   Interactive conflict resolution (with --scan)"
+    echo "  --analysis-mode MODE  Analysis depth: balanced (default), deep"
+    echo ""
+    echo "Strict Mode (NEW):"
+    echo "  When --strict is used with --scan:"
+    echo "  - Extracts operational standards (package manager, ports, commands)"
+    echo "  - Enables strict adherence mode in config"
+    echo "  - AI is BLOCKED from deviating (auto-corrects to source patterns)"
+    echo "  - User code review shows WARNINGS for deviations"
+    echo ""
+    echo "Examples:"
+    echo "  flow import-profile team-frontend.zip"
+    echo "  flow import-profile team-frontend.zip --backup"
+    echo "  flow import-profile --scan /path/to/other/project"
+    echo "  flow import-profile --scan ../my-other-app --strict"
+    echo "  flow import-profile --scan ../my-other-app --resolve-conflicts"
+}
+
+if [ -z "$1" ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    show_help
+    exit 0
+fi
+
+# Parse options first to detect --scan mode
+BACKUP=false
+DRY_RUN=false
+FORCE=false
+SKIP_LEARNINGS=false
+SKIP_RULES=false
+SKIP_TEMPLATES=false
+SCAN_MODE=false
+SCAN_PATH=""
+RESOLVE_CONFLICTS=false
+ANALYSIS_MODE="balanced"
+STRICT_MODE=false
+PROFILE_FILE=""
+
+# Determine scripts directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --backup)
+            BACKUP=true
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            ;;
+        --force)
+            FORCE=true
+            ;;
+        --skip-learnings)
+            SKIP_LEARNINGS=true
+            ;;
+        --skip-rules)
+            SKIP_RULES=true
+            ;;
+        --skip-templates)
+            SKIP_TEMPLATES=true
+            ;;
+        --scan)
+            SCAN_MODE=true
+            shift
+            SCAN_PATH="$1"
+            ;;
+        --resolve-conflicts)
+            RESOLVE_CONFLICTS=true
+            ;;
+        --analysis-mode)
+            shift
+            # Whitelist validation for analysis mode (security: prevent injection)
+            if [[ "$1" =~ ^(balanced|deep)$ ]]; then
+                ANALYSIS_MODE="$1"
+            else
+                echo -e "${RED}Error: Invalid analysis mode '$1'. Use 'balanced' or 'deep'${NC}"
+                exit 1
+            fi
+            ;;
+        --strict)
+            STRICT_MODE=true
+            ;;
+        -*)
+            echo -e "${RED}Unknown option: $1${NC}"
+            exit 1
+            ;;
+        *)
+            # Positional argument - profile file
+            if [ -z "$PROFILE_FILE" ]; then
+                PROFILE_FILE="$1"
+            fi
+            ;;
+    esac
+    shift
+done
+
+# Safe JSON reading function (prevents file path injection via process.argv)
+# Uses whitelisted query names instead of dynamic Function() for security
+safe_read_json() {
+    local file="$1"
+    local query_name="$2"
+    node -e '
+        const fs = require("fs");
+        const file = process.argv[1];
+        const queryName = process.argv[2];
+
+        // Whitelist of allowed queries - prevents code injection
+        const QUERIES = {
+            "patternCount": (p) => { let c=0; for(const k in p.patterns||{}){c+=(p.patterns[k]||[]).length} return c },
+            "conflictCount": (p) => (p.conflicts ? p.conflicts.length : 0),
+            "framework": (p) => p.meta?.framework || "unknown",
+            "conflicts": (p) => JSON.stringify(p.conflicts || [], null, 2),
+            "patterns": (p) => {
+                const lines = [];
+                for (const category in (p.patterns || {})) {
+                    lines.push("  " + category + ":");
+                    for (const pattern of (p.patterns[category] || []).slice(0, 10)) {
+                        lines.push("    - " + pattern.name + " (" + pattern.frequency + " occurrences)");
+                    }
+                }
+                return lines.join("\\n");
+            },
+            "operationalPackageManager": (p) => p.operational?.packageManager?.tool || "unknown",
+            "operationalDevPort": (p) => p.operational?.devServer?.port || 3000,
+            "patternFileNaming": (p) => p.patterns?.fileNaming?.style || "unknown",
+            "patternApiStyle": (p) => p.patterns?.apiRoutes?.style || "unknown",
+            "decisionsContent": (p, sourcePath) => {
+                const lines = [];
+                lines.push("## Imported Patterns");
+                lines.push("Source: " + (sourcePath || "unknown"));
+                lines.push("Imported: " + new Date().toISOString().split("T")[0]);
+                lines.push("");
+                for (const category in (p.patterns || {})) {
+                    lines.push("### " + category.charAt(0).toUpperCase() + category.slice(1) + " Patterns");
+                    lines.push("");
+                    for (const pattern of (p.patterns[category] || []).slice(0, 10)) {
+                        lines.push("**" + pattern.subcategory + "**: " + pattern.name);
+                        if (pattern.examples && pattern.examples.length > 0) {
+                            lines.push("  Examples: `" + pattern.examples.slice(0, 3).join("`, `") + "`");
+                        }
+                        lines.push("");
+                    }
+                }
+                return lines.join("\\n");
+            }
+        };
+
+        try {
+            const content = fs.readFileSync(file, "utf-8");
+
+            // Check for prototype pollution attempts (more comprehensive)
+            if (/__proto__|constructor\s*["\x27\x60:\[]|prototype\s*["\x27\x60:\[]|\["__proto__"\]|\["constructor"\]|\["prototype"\]/i.test(content)) {
+                console.error("Suspicious content detected");
+                process.exit(1);
+            }
+
+            const p = JSON.parse(content);
+
+            // Execute whitelisted query
+            if (!QUERIES[queryName]) {
+                console.error("Unknown query: " + queryName);
+                process.exit(1);
+            }
+
+            const result = QUERIES[queryName](p, process.env.SCAN_PATH);
+            console.log(result);
+        } catch(err) {
+            console.error(err.message);
+            process.exit(1);
+        }
+    ' -- "$file" "$query_name" 2>/dev/null
+}
+
+# ==========================================
+# SCAN MODE - Import patterns from another project
+# ==========================================
+if [ "$SCAN_MODE" = true ]; then
+    if [ -z "$SCAN_PATH" ]; then
+        echo -e "${RED}Error: --scan requires a project folder path${NC}"
+        exit 1
+    fi
+
+    if [ ! -d "$SCAN_PATH" ]; then
+        echo -e "${RED}Error: Project folder not found: $SCAN_PATH${NC}"
+        exit 1
+    fi
+
+    echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║  Scanning Project for Patterns                           ║${NC}"
+    echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "${DIM}Source: $SCAN_PATH${NC}"
+    echo ""
+
+    # Create temp directory for extraction results
+    TEMP_DIR=$(mktemp -d)
+    PATTERNS_FILE="$TEMP_DIR/patterns.json"
+
+    # Run pattern extraction on the source project
+    echo -e "${YELLOW}Extracting patterns...${NC}"
+
+    EXTRACTOR_OPTS="--format json --with-conflicts --analysis-mode \"$ANALYSIS_MODE\""
+
+    if ! node "$SCRIPT_DIR/flow-pattern-extractor.js" $EXTRACTOR_OPTS --output "$PATTERNS_FILE" --project "$SCAN_PATH" 2>/dev/null; then
+        echo -e "${RED}Error: Pattern extraction failed${NC}"
+        rm -rf "$TEMP_DIR"
+        exit 1
+    fi
+
+    # Parse extraction results (using safe JSON parsing with whitelisted queries)
+    PATTERN_COUNT=$(safe_read_json "$PATTERNS_FILE" "patternCount" || echo "0")
+    CONFLICT_COUNT=$(safe_read_json "$PATTERNS_FILE" "conflictCount" || echo "0")
+    FRAMEWORK=$(safe_read_json "$PATTERNS_FILE" "framework" || echo "unknown")
+
+    echo ""
+    echo -e "  ${GREEN}✓${NC} Detected: $FRAMEWORK"
+    echo -e "  ${GREEN}✓${NC} Extracted: $PATTERN_COUNT patterns"
+
+    # Run operational scanner if --strict mode
+    OPERATIONAL_FILE=""
+    if [ "$STRICT_MODE" = true ]; then
+        echo ""
+        echo -e "${YELLOW}Scanning operational standards (--strict mode)...${NC}"
+        OPERATIONAL_FILE="$TEMP_DIR/operational.json"
+
+        if node "$SCRIPT_DIR/flow-operational-scanner.js" "$SCAN_PATH" --json > "$OPERATIONAL_FILE" 2>/dev/null; then
+            PKG_MANAGER=$(safe_read_json "$OPERATIONAL_FILE" "operationalPackageManager" || echo "unknown")
+            DEV_PORT=$(safe_read_json "$OPERATIONAL_FILE" "operationalDevPort" || echo "3000")
+            FILE_NAMING=$(safe_read_json "$OPERATIONAL_FILE" "patternFileNaming" || echo "unknown")
+            API_STYLE=$(safe_read_json "$OPERATIONAL_FILE" "patternApiStyle" || echo "unknown")
+
+            echo -e "  ${GREEN}✓${NC} Package manager: $PKG_MANAGER"
+            echo -e "  ${GREEN}✓${NC} Dev server port: $DEV_PORT"
+            echo -e "  ${GREEN}✓${NC} File naming: $FILE_NAMING"
+            echo -e "  ${GREEN}✓${NC} API route style: $API_STYLE"
+        else
+            echo -e "  ${YELLOW}!${NC} Operational scanning failed (continuing without strict mode)"
+            STRICT_MODE=false
+        fi
+    fi
+
+    # Handle conflicts
+    RESOLVED_FILE=""
+    if [ "$CONFLICT_COUNT" -gt 0 ]; then
+        echo -e "  ${YELLOW}!${NC} Found: $CONFLICT_COUNT conflicts"
+
+        if [ "$RESOLVE_CONFLICTS" = true ]; then
+            # Extract conflicts for resolver (using safe JSON parsing with whitelisted query)
+            CONFLICTS_TEMP="$TEMP_DIR/conflicts.json"
+            safe_read_json "$PATTERNS_FILE" "conflicts" > "$CONFLICTS_TEMP"
+
+            echo ""
+            RESOLVED_FILE="$TEMP_DIR/resolved.json"
+
+            if ! node "$SCRIPT_DIR/flow-conflict-resolver.js" --input "$CONFLICTS_TEMP" --output "$RESOLVED_FILE"; then
+                echo -e "${YELLOW}Conflict resolution cancelled or skipped${NC}"
+                RESOLVED_FILE=""
+            fi
+        else
+            echo ""
+            echo -e "${DIM}Use --resolve-conflicts to interactively resolve conflicts${NC}"
+        fi
+    else
+        echo -e "  ${GREEN}✓${NC} No conflicts found"
+    fi
+
+    echo ""
+
+    # Dry run stops here
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "${YELLOW}Dry run - patterns found:${NC}"
+        echo ""
+        safe_read_json "$PATTERNS_FILE" "patterns" || true
+        rm -rf "$TEMP_DIR"
+        exit 0
+    fi
+
+    # Confirm import
+    if [ "$FORCE" != true ]; then
+        echo -e "${CYAN}Will import $PATTERN_COUNT patterns to:${NC}"
+        echo -e "  → .workflow/state/decisions.md"
+        echo -e "  → .claude/rules/ (auto-generated)"
+        echo ""
+        read -p "Import patterns? (y/N) " confirm
+        if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+            echo "Cancelled"
+            rm -rf "$TEMP_DIR"
+            exit 0
+        fi
+    fi
+
+    # Create backup if requested
+    if [ "$BACKUP" = true ]; then
+        BACKUP_DIR="wogi-backup-$(date +%Y%m%d-%H%M%S)"
+        mkdir -p "$BACKUP_DIR"
+        [ -f "$WORKFLOW_DIR/state/decisions.md" ] && cp "$WORKFLOW_DIR/state/decisions.md" "$BACKUP_DIR/"
+        [ -d ".claude/rules" ] && cp -r ".claude/rules" "$BACKUP_DIR/"
+        echo -e "${GREEN}✓${NC} Backup created: $BACKUP_DIR"
+        echo ""
+    fi
+
+    echo -e "${CYAN}Importing patterns...${NC}"
+    echo ""
+
+    # Generate decisions.md content from patterns (using safe JSON parsing with whitelisted query)
+    mkdir -p "$WORKFLOW_DIR/state"
+
+    # Export SCAN_PATH so the query can access it
+    export SCAN_PATH
+    DECISIONS_CONTENT=$(safe_read_json "$PATTERNS_FILE" "decisionsContent")
+
+    if [ -f "$WORKFLOW_DIR/state/decisions.md" ]; then
+        echo "" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "---" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "$DECISIONS_CONTENT" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo -e "  ${GREEN}✓${NC} decisions.md ${DIM}(appended)${NC}"
+    else
+        echo "# Project Decisions" > "$WORKFLOW_DIR/state/decisions.md"
+        echo "" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "$DECISIONS_CONTENT" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo -e "  ${GREEN}✓${NC} decisions.md ${DIM}(created)${NC}"
+    fi
+
+    # Generate rules from patterns
+    if [ -f "$SCRIPT_DIR/flow-rules-sync.js" ]; then
+        echo -e "  ${DIM}Syncing rules from patterns...${NC}"
+        node "$SCRIPT_DIR/flow-rules-sync.js" 2>/dev/null || true
+        echo -e "  ${GREEN}✓${NC} .claude/rules/"
+    fi
+
+    # Save extracted patterns for future reference
+    mkdir -p "$WORKFLOW_DIR/extracted"
+    cp "$PATTERNS_FILE" "$WORKFLOW_DIR/extracted/imported-patterns.json"
+
+    if [ -n "$RESOLVED_FILE" ] && [ -f "$RESOLVED_FILE" ]; then
+        cp "$RESOLVED_FILE" "$WORKFLOW_DIR/extracted/imported-resolutions.json"
+    fi
+
+    # Save operational standards and enable strict adherence (if --strict mode)
+    if [ "$STRICT_MODE" = true ] && [ -n "$OPERATIONAL_FILE" ] && [ -f "$OPERATIONAL_FILE" ]; then
+        echo -e "  ${GREEN}✓${NC} project-standards.json"
+        cp "$OPERATIONAL_FILE" "$WORKFLOW_DIR/state/project-standards.json"
+
+        # Enable strict adherence in config.json
+        if [ -f "$WORKFLOW_DIR/config.json" ]; then
+            # Use Node.js to safely update config
+            node -e '
+                const fs = require("fs");
+                const configPath = process.argv[1];
+                const sourcePath = process.argv[2];
+                try {
+                    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+                    config.strictAdherence = {
+                        enabled: true,
+                        aiMode: "block",
+                        userReviewMode: "warn",
+                        sourceProject: sourcePath,
+                        scanDepth: "full",
+                        categories: {
+                            packageManager: true,
+                            devCommands: true,
+                            ports: true,
+                            apiPatterns: true,
+                            namingConventions: true,
+                            all: true
+                        },
+                        allowAdditions: false,
+                        overrideLog: ".workflow/state/adherence-overrides.json"
+                    };
+                    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+                } catch (e) {
+                    console.error("Failed to update config:", e.message);
+                    process.exit(1);
+                }
+            ' "$WORKFLOW_DIR/config.json" "$SCAN_PATH"
+            echo -e "  ${GREEN}✓${NC} Strict adherence ENABLED in config.json"
+        fi
+
+        # Add operational standards to decisions.md
+        OPERATIONAL_CONTENT=$(node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync(process.argv[1], "utf-8"));
+            const lines = [];
+
+            lines.push("### Operational Standards (Auto-detected)");
+            lines.push("<!-- PIN: operational-standards -->");
+            lines.push("");
+            lines.push("**Source**: " + process.argv[2]);
+            lines.push("**Imported**: " + new Date().toISOString().split("T")[0]);
+            lines.push("");
+
+            if (data.operational?.packageManager?.tool) {
+                lines.push("**Package Manager**: " + data.operational.packageManager.tool);
+                lines.push("- ALWAYS use `" + data.operational.packageManager.tool + "` for package operations");
+                lines.push("- NEVER use other package managers (npm, yarn, pnpm, bun)");
+                lines.push("");
+            }
+
+            if (data.operational?.devServer?.port) {
+                lines.push("**Development Server**: Port " + data.operational.devServer.port);
+                lines.push("- Run dev server on localhost:" + data.operational.devServer.port);
+                lines.push("- NEVER use default ports (3000, 5173) unless that IS the configured port");
+                lines.push("");
+            }
+
+            if (data.patterns?.apiRoutes?.style) {
+                lines.push("**API Routes**: " + data.patterns.apiRoutes.style);
+                if (data.patterns.apiRoutes.examples?.length > 0) {
+                    lines.push("- Examples: " + data.patterns.apiRoutes.examples.slice(0, 3).join(", "));
+                }
+                lines.push("");
+            }
+
+            if (data.patterns?.fileNaming?.style) {
+                lines.push("**File Naming**: " + data.patterns.fileNaming.style);
+                lines.push("");
+            }
+
+            console.log(lines.join("\\n"));
+        ' "$OPERATIONAL_FILE" "$SCAN_PATH")
+
+        if [ -f "$WORKFLOW_DIR/state/decisions.md" ]; then
+            echo "" >> "$WORKFLOW_DIR/state/decisions.md"
+            echo "$OPERATIONAL_CONTENT" >> "$WORKFLOW_DIR/state/decisions.md"
+            echo -e "  ${GREEN}✓${NC} Operational standards added to decisions.md"
+        fi
+    fi
+
+    # Cleanup
+    rm -rf "$TEMP_DIR"
+
+    echo ""
+    echo -e "${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║  ✓ Patterns imported successfully!                       ║${NC}"
+    echo -e "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "${DIM}Imported $PATTERN_COUNT patterns from $SCAN_PATH${NC}"
+
+    if [ "$STRICT_MODE" = true ]; then
+        echo ""
+        echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${CYAN}║  ⚡ STRICT ADHERENCE MODE ENABLED                        ║${NC}"
+        echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "AI actions will be ${YELLOW}BLOCKED${NC} if they deviate from source patterns."
+        echo -e "User code will show ${YELLOW}WARNINGS${NC} during review."
+        echo ""
+        echo -e "${DIM}To check status: node scripts/flow-strict-adherence.js${NC}"
+        echo -e "${DIM}To override: flow strict-override --reason \"Your reason\"${NC}"
+    fi
+
+    echo ""
+    echo -e "${DIM}Restart Claude CLI to apply changes.${NC}"
+
+    exit 0
+fi
+
+# ==========================================
+# PROFILE MODE - Import from zip file
+# ==========================================
+
+# Check file exists
+if [ -z "$PROFILE_FILE" ]; then
+    echo -e "${RED}Error: No profile file specified${NC}"
+    echo -e "${DIM}Use --help for usage information${NC}"
+    exit 1
+fi
+
+if [ ! -f "$PROFILE_FILE" ]; then
+    echo -e "${RED}Error: Profile file not found: $PROFILE_FILE${NC}"
+    exit 1
+fi
+
+# Create temp directory
+TEMP_DIR=$(mktemp -d)
+
+echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║  Importing Profile                                        ║${NC}"
+echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+echo ""
+
+# Extract profile (with path traversal protection)
+unzip -q "$PROFILE_FILE" -d "$TEMP_DIR"
+
+# Validate no path traversal in extracted files
+if find "$TEMP_DIR" -name "*../*" -o -name "*\.\.*" 2>/dev/null | grep -q .; then
+    echo -e "${RED}Error: Profile contains suspicious paths (potential path traversal)${NC}"
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Check for symlinks that could escape temp dir (early fail - defense in depth at line 553)
+SYMLINK_CHECK_FAILED=false
+while IFS= read -r link; do
+    target=$(readlink -f "$link" 2>/dev/null || true)
+    if [ -n "$target" ] && [[ ! "$target" == "$TEMP_DIR"* ]]; then
+        SYMLINK_CHECK_FAILED=true
+        break
+    fi
+done < <(find "$TEMP_DIR" -type l 2>/dev/null)
+
+if [ "$SYMLINK_CHECK_FAILED" = true ]; then
+    echo -e "${RED}Error: Profile contains symlinks pointing outside temp directory${NC}"
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Find the profile directory (first directory in zip)
+PROFILE_DIR=$(find "$TEMP_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)
+
+# Validate profile dir is within temp dir
+if [ -z "$PROFILE_DIR" ]; then
+    echo -e "${RED}Error: Invalid profile format${NC}"
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Ensure PROFILE_DIR is actually inside TEMP_DIR (defense in depth)
+REAL_PROFILE_DIR=$(cd "$PROFILE_DIR" 2>/dev/null && pwd)
+REAL_TEMP_DIR=$(cd "$TEMP_DIR" 2>/dev/null && pwd)
+if [[ ! "$REAL_PROFILE_DIR" == "$REAL_TEMP_DIR"* ]]; then
+    echo -e "${RED}Error: Profile directory escaped temp directory${NC}"
+    rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Show profile info
+if [ -f "$PROFILE_DIR/PROFILE.md" ]; then
+    echo -e "${CYAN}Profile Info:${NC}"
+    head -15 "$PROFILE_DIR/PROFILE.md" | sed 's/^/  /'
+    echo "  ..."
+    echo ""
+fi
+
+# ==========================================
+# Analyze what will be imported
+# ==========================================
+echo -e "${YELLOW}Files to import:${NC}"
+echo ""
+
+# Track counts
+CORE_COUNT=0
+RULES_COUNT=0
+LEARNINGS_COUNT=0
+TEMPLATES_COUNT=0
+
+# CORE FILES
+echo -e "${DIM}Core:${NC}"
+
+if [ -f "$PROFILE_DIR/CLAUDE.md" ]; then
+    echo -e "  ${GREEN}→${NC} CLAUDE.md"
+    CORE_COUNT=$((CORE_COUNT + 1))
+fi
+
+if [ -d "$PROFILE_DIR/agents" ]; then
+    agent_count=$(ls "$PROFILE_DIR/agents"/*.md 2>/dev/null | wc -l | tr -d ' ')
+    echo -e "  ${GREEN}→${NC} agents/ ($agent_count personas)"
+    CORE_COUNT=$((CORE_COUNT + agent_count))
+fi
+
+if [ -f "$PROFILE_DIR/.workflow/config.json" ]; then
+    echo -e "  ${GREEN}→${NC} config.json ${DIM}(will merge)${NC}"
+    CORE_COUNT=$((CORE_COUNT + 1))
+fi
+
+# RULES & DECISIONS
+if [ "$SKIP_RULES" != true ]; then
+    HAS_RULES=false
+
+    if [ -f "$PROFILE_DIR/.workflow/state/decisions.md" ]; then
+        HAS_RULES=true
+    fi
+
+    if [ -d "$PROFILE_DIR/.claude/rules" ]; then
+        rule_count=$(ls "$PROFILE_DIR/.claude/rules"/*.md 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$rule_count" -gt 0 ]; then
+            HAS_RULES=true
+        fi
+    fi
+
+    if [ "$HAS_RULES" = true ]; then
+        echo ""
+        echo -e "${DIM}Rules & Decisions:${NC}"
+
+        if [ -f "$PROFILE_DIR/.workflow/state/decisions.md" ]; then
+            echo -e "  ${YELLOW}→${NC} decisions.md ${DIM}(will append)${NC}"
+            RULES_COUNT=$((RULES_COUNT + 1))
+        fi
+
+        if [ -d "$PROFILE_DIR/.claude/rules" ]; then
+            rule_count=$(ls "$PROFILE_DIR/.claude/rules"/*.md 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$rule_count" -gt 0 ]; then
+                echo -e "  ${GREEN}→${NC} .claude/rules/ ($rule_count rules)"
+                RULES_COUNT=$((RULES_COUNT + rule_count))
+            fi
+        fi
+    fi
+fi
+
+# LEARNINGS
+if [ "$SKIP_LEARNINGS" != true ]; then
+    HAS_LEARNINGS=false
+
+    if [ -f "$PROFILE_DIR/.workflow/state/feedback-patterns.md" ]; then
+        HAS_LEARNINGS=true
+    fi
+
+    if [ -d "$PROFILE_DIR/.claude/skills" ]; then
+        skill_count=$(find "$PROFILE_DIR/.claude/skills" -name "patterns.md" -o -name "learnings.md" 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$skill_count" -gt 0 ]; then
+            HAS_LEARNINGS=true
+        fi
+    fi
+
+    if [ "$HAS_LEARNINGS" = true ]; then
+        echo ""
+        echo -e "${DIM}Learnings:${NC}"
+
+        if [ -f "$PROFILE_DIR/.workflow/state/feedback-patterns.md" ]; then
+            echo -e "  ${YELLOW}→${NC} feedback-patterns.md ${DIM}(will append)${NC}"
+            LEARNINGS_COUNT=$((LEARNINGS_COUNT + 1))
+        fi
+
+        if [ -d "$PROFILE_DIR/.claude/skills" ]; then
+            skill_dirs=$(find "$PROFILE_DIR/.claude/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$skill_dirs" -gt 0 ]; then
+                echo -e "  ${GREEN}→${NC} skill learnings ($skill_dirs skills)"
+                LEARNINGS_COUNT=$((LEARNINGS_COUNT + skill_dirs))
+            fi
+        fi
+    fi
+fi
+
+# TEMPLATES
+if [ "$SKIP_TEMPLATES" != true ] && [ -d "$PROFILE_DIR/templates" ]; then
+    template_count=$(ls "$PROFILE_DIR/templates"/*.md 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$template_count" -gt 0 ]; then
+        echo ""
+        echo -e "${DIM}Templates:${NC}"
+        for template in "$PROFILE_DIR/templates"/*.md; do
+            if [ -f "$template" ]; then
+                echo -e "  ${GREEN}→${NC} $(basename "$template")"
+                TEMPLATES_COUNT=$((TEMPLATES_COUNT + 1))
+            fi
+        done
+    fi
+fi
+
+# APP MAP (optional)
+if [ -f "$PROFILE_DIR/.workflow/state/app-map.md" ]; then
+    echo ""
+    echo -e "${DIM}Component Registry (optional):${NC}"
+    echo -e "  ${YELLOW}→${NC} app-map.md ${DIM}(will ask)${NC}"
+fi
+
+echo ""
+
+# Dry run stops here
+if [ "$DRY_RUN" = true ]; then
+    echo -e "${YELLOW}Dry run - no changes made${NC}"
+    rm -rf "$TEMP_DIR"
+    exit 0
+fi
+
+# Confirm unless forced
+if [ "$FORCE" != true ]; then
+    echo -e "${CYAN}Summary:${NC} $CORE_COUNT core, $RULES_COUNT rules, $LEARNINGS_COUNT learnings, $TEMPLATES_COUNT templates"
+    echo ""
+    read -p "Import these files? (y/N) " confirm
+    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+        echo "Cancelled"
+        rm -rf "$TEMP_DIR"
+        exit 0
+    fi
+fi
+
+# Create backup if requested
+if [ "$BACKUP" = true ]; then
+    BACKUP_DIR="wogi-backup-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$BACKUP_DIR"
+
+    [ -f "CLAUDE.md" ] && cp "CLAUDE.md" "$BACKUP_DIR/"
+    [ -d "agents" ] && cp -r "agents" "$BACKUP_DIR/"
+    [ -d ".claude/rules" ] && cp -r ".claude/rules" "$BACKUP_DIR/"
+    [ -f "$WORKFLOW_DIR/config.json" ] && cp "$WORKFLOW_DIR/config.json" "$BACKUP_DIR/"
+    [ -f "$WORKFLOW_DIR/state/decisions.md" ] && cp "$WORKFLOW_DIR/state/decisions.md" "$BACKUP_DIR/"
+    [ -f "$WORKFLOW_DIR/state/feedback-patterns.md" ] && cp "$WORKFLOW_DIR/state/feedback-patterns.md" "$BACKUP_DIR/"
+
+    echo -e "${GREEN}✓${NC} Backup created: $BACKUP_DIR"
+    echo ""
+fi
+
+# ==========================================
+# Import files
+# ==========================================
+echo -e "${CYAN}Importing...${NC}"
+echo ""
+
+# CLAUDE.md
+if [ -f "$PROFILE_DIR/CLAUDE.md" ]; then
+    cp "$PROFILE_DIR/CLAUDE.md" ./
+    echo -e "  ${GREEN}✓${NC} CLAUDE.md"
+fi
+
+# agents/
+if [ -d "$PROFILE_DIR/agents" ]; then
+    mkdir -p agents
+    cp "$PROFILE_DIR/agents"/*.md agents/
+    echo -e "  ${GREEN}✓${NC} agents/"
+fi
+
+# config.json (smart merge)
+if [ -f "$PROFILE_DIR/.workflow/config.json" ]; then
+    mkdir -p "$WORKFLOW_DIR"
+    if [ -f "$WORKFLOW_DIR/config.json" ]; then
+        # Use jq to merge if available, otherwise replace
+        if command -v jq &> /dev/null; then
+            # Merge: profile values override, but keep local additions
+            jq -s '.[0] * .[1]' "$WORKFLOW_DIR/config.json" "$PROFILE_DIR/.workflow/config.json" > "$WORKFLOW_DIR/config.json.tmp"
+            mv "$WORKFLOW_DIR/config.json.tmp" "$WORKFLOW_DIR/config.json"
+            echo -e "  ${GREEN}✓${NC} config.json ${DIM}(merged)${NC}"
+        else
+            cp "$PROFILE_DIR/.workflow/config.json" "$WORKFLOW_DIR/"
+            echo -e "  ${GREEN}✓${NC} config.json ${DIM}(replaced)${NC}"
+        fi
+    else
+        cp "$PROFILE_DIR/.workflow/config.json" "$WORKFLOW_DIR/"
+        echo -e "  ${GREEN}✓${NC} config.json"
+    fi
+fi
+
+# decisions.md (append if exists)
+if [ "$SKIP_RULES" != true ] && [ -f "$PROFILE_DIR/.workflow/state/decisions.md" ]; then
+    mkdir -p "$WORKFLOW_DIR/state"
+    if [ -f "$WORKFLOW_DIR/state/decisions.md" ]; then
+        echo "" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "---" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "## Imported from profile" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "Source: $(basename "$PROFILE_FILE")" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "Imported: $(date +%Y-%m-%d)" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo "" >> "$WORKFLOW_DIR/state/decisions.md"
+        # Skip the header from the imported file
+        tail -n +3 "$PROFILE_DIR/.workflow/state/decisions.md" >> "$WORKFLOW_DIR/state/decisions.md"
+        echo -e "  ${GREEN}✓${NC} decisions.md ${DIM}(appended)${NC}"
+    else
+        cp "$PROFILE_DIR/.workflow/state/decisions.md" "$WORKFLOW_DIR/state/"
+        echo -e "  ${GREEN}✓${NC} decisions.md"
+    fi
+fi
+
+# .claude/rules/
+if [ "$SKIP_RULES" != true ] && [ -d "$PROFILE_DIR/.claude/rules" ]; then
+    mkdir -p ".claude/rules"
+    for rule_file in "$PROFILE_DIR/.claude/rules"/*.md; do
+        if [ -f "$rule_file" ]; then
+            cp "$rule_file" ".claude/rules/"
+        fi
+    done
+    echo -e "  ${GREEN}✓${NC} .claude/rules/"
+fi
+
+# feedback-patterns.md (append if exists)
+if [ "$SKIP_LEARNINGS" != true ] && [ -f "$PROFILE_DIR/.workflow/state/feedback-patterns.md" ]; then
+    mkdir -p "$WORKFLOW_DIR/state"
+    if [ -f "$WORKFLOW_DIR/state/feedback-patterns.md" ]; then
+        echo "" >> "$WORKFLOW_DIR/state/feedback-patterns.md"
+        echo "---" >> "$WORKFLOW_DIR/state/feedback-patterns.md"
+        echo "" >> "$WORKFLOW_DIR/state/feedback-patterns.md"
+        echo "## Imported patterns" >> "$WORKFLOW_DIR/state/feedback-patterns.md"
+        echo "Source: $(basename "$PROFILE_FILE")" >> "$WORKFLOW_DIR/state/feedback-patterns.md"
+        echo "" >> "$WORKFLOW_DIR/state/feedback-patterns.md"
+        tail -n +3 "$PROFILE_DIR/.workflow/state/feedback-patterns.md" >> "$WORKFLOW_DIR/state/feedback-patterns.md"
+        echo -e "  ${GREEN}✓${NC} feedback-patterns.md ${DIM}(appended)${NC}"
+    else
+        cp "$PROFILE_DIR/.workflow/state/feedback-patterns.md" "$WORKFLOW_DIR/state/"
+        echo -e "  ${GREEN}✓${NC} feedback-patterns.md"
+    fi
+fi
+
+# Skill learnings
+if [ "$SKIP_LEARNINGS" != true ] && [ -d "$PROFILE_DIR/.claude/skills" ]; then
+    for skill_dir in "$PROFILE_DIR/.claude/skills"/*/; do
+        if [ -d "$skill_dir/knowledge" ]; then
+            skill_name=$(basename "$skill_dir")
+            mkdir -p ".claude/skills/$skill_name/knowledge"
+
+            # Copy patterns.md and learnings.md
+            for file in patterns.md learnings.md; do
+                if [ -f "$skill_dir/knowledge/$file" ]; then
+                    if [ -f ".claude/skills/$skill_name/knowledge/$file" ]; then
+                        # Append to existing
+                        echo "" >> ".claude/skills/$skill_name/knowledge/$file"
+                        echo "---" >> ".claude/skills/$skill_name/knowledge/$file"
+                        echo "## Imported from profile" >> ".claude/skills/$skill_name/knowledge/$file"
+                        tail -n +3 "$skill_dir/knowledge/$file" >> ".claude/skills/$skill_name/knowledge/$file"
+                    else
+                        cp "$skill_dir/knowledge/$file" ".claude/skills/$skill_name/knowledge/"
+                    fi
+                fi
+            done
+        fi
+    done
+    echo -e "  ${GREEN}✓${NC} skill learnings"
+fi
+
+# Templates (copy to .workflow/templates/)
+if [ "$SKIP_TEMPLATES" != true ] && [ -d "$PROFILE_DIR/templates" ]; then
+    mkdir -p "$WORKFLOW_DIR/templates"
+    for template in "$PROFILE_DIR/templates"/*.md; do
+        if [ -f "$template" ]; then
+            template_name=$(basename "$template")
+            # Only copy if doesn't exist (templates are starting points)
+            if [ ! -f "$WORKFLOW_DIR/templates/$template_name" ]; then
+                cp "$template" "$WORKFLOW_DIR/templates/"
+            fi
+        fi
+    done
+    echo -e "  ${GREEN}✓${NC} templates"
+fi
+
+# App-map (ask before importing)
+if [ -f "$PROFILE_DIR/.workflow/state/app-map.md" ]; then
+    if [ "$FORCE" = true ]; then
+        mkdir -p "$WORKFLOW_DIR/state"
+        cp "$PROFILE_DIR/.workflow/state/app-map.md" "$WORKFLOW_DIR/state/"
+        echo -e "  ${GREEN}✓${NC} app-map.md"
+    else
+        echo ""
+        read -p "Import app-map.md? (This is usually project-specific) (y/N) " import_appmap
+        if [ "$import_appmap" = "y" ] || [ "$import_appmap" = "Y" ]; then
+            mkdir -p "$WORKFLOW_DIR/state"
+            cp "$PROFILE_DIR/.workflow/state/app-map.md" "$WORKFLOW_DIR/state/"
+            echo -e "  ${GREEN}✓${NC} app-map.md"
+        else
+            echo -e "  ${DIM}⊘${NC} app-map.md ${DIM}(skipped)${NC}"
+        fi
+    fi
+fi
+
+# Cleanup
+rm -rf "$TEMP_DIR"
+
+echo ""
+echo -e "${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║  ✓ Profile imported successfully!                        ║${NC}"
+echo -e "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "${DIM}Restart Claude CLI to apply changes.${NC}"
+
+# Sync rules if decisions were imported
+if [ "$SKIP_RULES" != true ] && [ -f "$WORKFLOW_DIR/state/decisions.md" ]; then
+    if [ -f "./scripts/flow-rules-sync.js" ]; then
+        echo ""
+        echo -e "${DIM}Syncing rules from decisions.md...${NC}"
+        node ./scripts/flow-rules-sync.js 2>/dev/null || true
+    fi
+fi

@@ -1,0 +1,1054 @@
+#!/bin/bash
+
+# Wogi Flow - Main CLI
+# Self-improving AI development workflow
+
+set -e
+set -o pipefail  # Catch errors in piped commands
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+show_version() {
+    if [ -f "$PROJECT_ROOT/.wogi-version" ]; then
+        echo "Wogi Flow v$(cat "$PROJECT_ROOT/.wogi-version")"
+    else
+        echo "Wogi Flow (version unknown)"
+    fi
+}
+
+show_quick_help() {
+    show_version
+    echo ""
+    echo "Quick Start:"
+    echo "  flow install          # Set up workflow in project"
+    echo "  flow ready            # See tasks ready to work on"
+    echo "  flow start TASK-XXX   # Start a task"
+    echo "  flow done TASK-XXX    # Complete a task"
+    echo "  flow status           # Project overview"
+    echo ""
+    echo "Run 'flow help' for full command list"
+    echo "Run 'flow help <command>' for command details"
+}
+
+show_help() {
+    show_version
+    echo ""
+    echo "Usage: flow <command> [options]"
+    echo ""
+    echo "Setup & Updates:"
+    echo "  init                 Setup guide (directs to AI assistant)"
+    echo "  onboard              Project onboarding (directs to AI assistant)"
+    echo "  migrate              Migrate to universal CLI-agnostic structure"
+    echo "  migrate --dry-run    Preview migration without changes"
+    echo "  update               Update to latest version (preserves data)"
+    echo "  update --check       Check for available updates"
+    echo ""
+    echo "Task Management:"
+    echo "  ready                Show tasks ready to work on"
+    echo "  start <task-id>      Start working on a task"
+    echo "  done <task-id>       Mark task complete"
+    echo "  status               Show project overview"
+    echo "  deps <task-id>       Show task dependencies"
+    echo ""
+    echo "Story & Feature Creation:"
+    echo "  story <title>        Create detailed story with acceptance criteria"
+    echo "  story <title> --deep Create story with automatic decomposition"
+    echo "  new-feature <n>   Create new feature"
+    echo "  bug <title>          Create bug report"
+    echo "  capture <title>      Quick capture idea/bug without interrupting flow"
+    echo ""
+    echo "Roadmap & Planning:"
+    echo "  roadmap              Show project roadmap"
+    echo "  roadmap add <title>  Add item to roadmap"
+    echo "  roadmap validate <t> Validate item dependencies"
+    echo "  roadmap move <t>     Move item between phases"
+    echo "  roadmap list [phase] List items by phase"
+    echo ""
+    echo "Workflow:"
+    echo "  morning              Morning briefing - where you left off"
+    echo "  health               Check workflow health"
+    echo "  verify <gate>        Run verification gate (lint, typecheck, test, build)"
+    echo "  verify all           Run all verification gates"
+    echo "  regression           Run regression tests on completed tasks"
+    echo "  regression --all     Test all completed tasks"
+    echo "  step list            Show all workflow steps with status"
+    echo "  step enable <name>   Enable a workflow step"
+    echo "  step disable <name>  Disable a workflow step"
+    echo "  standup [days]       Generate standup summary"
+    echo "  session-end          End session properly"
+    echo "  init                 Initialize workflow (legacy)"
+    echo "  setup-hooks          Install/manage git hooks"
+    echo "  hooks setup          Install CLI hooks (Claude Code, etc.)"
+    echo "  hooks remove         Remove CLI hooks"
+    echo "  hooks status         Show CLI hooks status"
+    echo "  statusline-setup     Configure Claude Code status line"
+    echo "  archive              Archive old request-log entries"
+    echo "  watch                Run file watcher for auto-validation"
+    echo ""
+    echo "Components:"
+    echo "  update-map           Add/scan components in app map"
+    echo "  map-index            Auto-generate component index"
+    echo "  map-index scan       Rescan codebase"
+    echo "  map-sync             Compare index with app-map"
+    echo ""
+    echo "Functions & APIs:"
+    echo "  function-index scan  Scan for utility functions"
+    echo "  function-index show  Show function details"
+    echo "  function-index map   Regenerate function-map.md"
+    echo "  api-index scan       Scan for API calls"
+    echo "  api-index show       Show API function or endpoint"
+    echo "  api-index map        Regenerate api-map.md"
+    echo ""
+    echo "WebMCP:"
+    echo "  webmcp-generate scan   Scan components, generate tool definitions"
+    echo "  webmcp-generate show   Display generated tools summary"
+    echo "  webmcp-generate export Output tools JSON to stdout"
+    echo ""
+    echo "Skills & Learning:"
+    echo "  skill-learn          Extract learnings from recent changes"
+    echo "  auto-learn           Auto-learn from session reviews and bug fixes"
+    echo "  skill-create <name>  Create a new skill"
+    echo "  skill-create --list  List existing skills"
+    echo "  skill detect         Detect frameworks in project"
+    echo "  skill list           List installed skills"
+    echo "  skill registry       List skills from registry"
+    echo "  skill add <name>     Install skill from registry"
+    echo "  skill remove <name>  Remove installed skill"
+    echo "  skill update [name]  Update skill(s)"
+    echo "  skill info <name>    Show skill details"
+    echo "  correct              Capture a correction/learning"
+    echo "  correct \"desc\"       Quick mode with description"
+    echo "  correct list         List recent corrections"
+    echo "  aggregate            Aggregate learnings across skills"
+    echo "  aggregate --promote  Interactive promotion wizard"
+    echo "  pattern-enforce      Enforce patterns from decisions/app-map"
+    echo ""
+    echo "Code Analysis:"
+    echo "  code-intel analyze   Analyze imports/exports in codebase"
+    echo "  code-intel deps      Show dependency graph"
+    echo "  review               Code review with auto multi-pass detection"
+    echo "  review --multipass   Force multi-pass review mode"
+    echo ""
+    echo "Error Recovery:"
+    echo "  error-recovery analyze  Analyze error output hierarchically"
+    echo "  error-recovery status   Show recovery session status"
+    echo ""
+    echo "Epics:"
+    echo "  epic list            List all epics"
+    echo "  epic show <id>       Show epic details and progress"
+    echo "  epic create          Create a new epic"
+    echo ""
+    echo "Code Traces:"
+    echo "  trace \"<prompt>\"     Generate task-focused code trace"
+    echo "  trace list           List saved traces"
+    echo "  trace show <n>    Show a saved trace"
+    echo ""
+    echo "Run History:"
+    echo "  run-trace start <n>  Start a new traced run"
+    echo "  run-trace end        End current run"
+    echo "  history [--limit N]  List recent runs"
+    echo "  inspect <run-id>     Show run details"
+    echo "  run-trace cleanup    Remove old runs"
+    echo ""
+    echo "Diff Preview:"
+    echo "  diff <file1> <file2>           Show diff between files"
+    echo "  diff --preview <ops.json>      Preview proposed changes"
+    echo "  diff --apply <ops.json>        Apply changes from JSON"
+    echo "  diff --dry-run <ops.json>      Show diff without prompting"
+    echo ""
+    echo "Checkpoints:"
+    echo "  checkpoint create [msg]        Create manual checkpoint"
+    echo "  checkpoint list                List all checkpoints"
+    echo "  checkpoint rollback <id>       Rollback to checkpoint"
+    echo "  checkpoint cleanup             Remove old checkpoints"
+    echo ""
+    echo "Search & Context:"
+    echo "  search <query>       Search request-log by tag/keyword"
+    echo "  context <task-id>    Load all context for a task"
+    echo "  links list           List external links"
+    echo "  links fetch <name>   Fetch and cache link content"
+    echo "  links add <n> <url>  Add external link"
+    echo ""
+    echo "Team & Collaboration:"
+    echo "  team login <code>    Join team with invite code"
+    echo "  team logout          Leave current team"
+    echo "  team setup           List/select team setups"
+    echo "  team sync            Sync knowledge with team (project-scoped)"
+    echo "  team sync-status     Show sync status for project"
+    echo "  team sync-init <id>  Initialize project-based sync"
+    echo "  team proposals       View/vote on proposals"
+    echo "  team status          Show team status"
+    echo "  team dashboard       Start observability web dashboard (Phase 6)"
+    echo "  export-profile       Export workflow config for team"
+    echo "  import-profile       Import team config"
+    echo ""
+    echo "Integrations (Phase 6):"
+    echo "  jira list            List assigned Jira issues"
+    echo "  jira sync            Import Jira issues to ready.json"
+    echo "  jira push            Push completed tasks to Jira"
+    echo "  jira config          Show Jira configuration"
+    echo "  linear list          List assigned Linear issues"
+    echo "  linear sync          Import Linear issues to ready.json"
+    echo "  linear push          Push completed tasks to Linear"
+    echo "  linear config        Show Linear configuration"
+    echo "  external-tasks       List tasks from all integrations"
+    echo "  sync-daemon start    Start background sync daemon"
+    echo "  sync-daemon stop     Stop background sync daemon"
+    echo "  sync-daemon status   Show daemon status"
+    echo ""
+    echo "PRD Management:"
+    echo "  prd load <file>      Load PRD into memory"
+    echo "  prd context <task>   Get PRD context for task"
+    echo "  prd list             List loaded PRDs"
+    echo "  prd clear            Clear PRD data"
+    echo ""
+    echo "Docs:"
+    echo "  changelog            Generate changelog from request-log"
+    echo ""
+    echo "Parallel Execution:"
+    echo "  parallel config      Show parallel execution config"
+    echo "  parallel check       Check tasks for parallel potential"
+    echo "  parallel enable      Enable parallel execution"
+    echo "  parallel disable     Disable parallel execution"
+    echo ""
+    echo "Loop Enforcement:"
+    echo "  loop status          Show active loop session"
+    echo "  loop stats           Show loop statistics"
+    echo "  loop can-exit        Check if current loop can exit"
+    echo ""
+    echo "Task Queue (v2.1):"
+    echo "  queue init <ids...>  Initialize multi-task queue"
+    echo "  queue status         Show queue status"
+    echo "  queue clear          Clear the queue"
+    echo "  queue parse \"text\"   Parse natural language for task IDs"
+    echo "  queue advance        Advance to next task"
+    echo ""
+    echo "Durable Sessions (v2.0):"
+    echo "  suspend              Suspend current task"
+    echo "  suspend --wait-ci    Wait for CI/CD pipeline"
+    echo "  suspend --review     Wait for human review"
+    echo "  suspend --rate-limit Wait N seconds"
+    echo "  resume               Resume suspended task"
+    echo "  resume --status      Show suspension status"
+    echo "  resume --approve     Approve human review"
+    echo "  session status       Show durable session status"
+    echo "  session stats        Show session statistics"
+    echo "  session clear        Clear active session"
+    echo ""
+    echo "Worktree Isolation:"
+    echo "  worktree enable      Enable worktree isolation for tasks"
+    echo "  worktree disable     Disable worktree isolation"
+    echo "  worktree list        List active task worktrees"
+    echo "  worktree cleanup     Remove stale worktrees"
+    echo ""
+    echo "Figma Analyzer:"
+    echo "  figma scan           Scan codebase for components"
+    echo "  figma show [name]    Show component details"
+    echo "  figma extract <file> Extract from Figma data"
+    echo "  figma match <file>   Match against registry"
+    echo "  figma confirm <file> Interactive confirmation"
+    echo "  figma generate       Generate code from decisions"
+    echo "  figma server [port]  Start MCP server"
+    echo ""
+    echo "Hybrid Mode:"
+    echo "  hybrid enable        Enable hybrid mode (Claude plans, local LLM executes)"
+    echo "  hybrid disable       Disable hybrid mode"
+    echo "  hybrid status        Show hybrid mode status"
+    echo "  hybrid execute       Execute a plan file"
+    echo "  hybrid rollback      Rollback last execution"
+    echo "  hybrid test          Test hybrid mode installation"
+    echo "  templates generate   Generate project-specific templates"
+    echo ""
+    echo "Model Providers:"
+    echo "  providers list       List all available providers"
+    echo "  providers detect     Detect running local providers"
+    echo "  providers test <t>   Test a provider connection"
+    echo ""
+    echo "CLI Bridge:"
+    echo "  bridge sync          Sync .workflow/ to CLI-specific folder"
+    echo "  bridge status        Show bridge status"
+    echo "  bridge list          List available bridges"
+    echo ""
+    echo "Release Channels:"
+    echo "  channel show         Show current release channel"
+    echo "  channel set <name>   Set release channel (stable, beta, canary)"
+    echo "  channel list         List available channels"
+    echo "  channel check        Check for updates"
+    echo ""
+    echo "Declarative Workflows:"
+    echo "  workflow list        List available workflows"
+    echo "  workflow run <name>  Run a workflow"
+    echo "  workflow create <n>  Create workflow template"
+    echo ""
+    echo "Metrics & Analysis:"
+    echo "  metrics              Show command success/failure stats"
+    echo "  metrics --problems   Show only problematic commands"
+    echo "  metrics --reset      Clear all metrics"
+    echo "  insights             Generate codebase insights report"
+    echo "  auto-context \"task\"  Preview context that would be loaded"
+    echo "  model-adapter        Show current model adapter info"
+    echo "  model-adapter --stats Show per-model statistics"
+    echo "  models               Manage model registry and stats"
+    echo "  models list          List all registered models"
+    echo "  models info <model>  Show detailed model info"
+    echo "  models route <type>  Get routing recommendation"
+    echo "  models stats         Show model performance statistics"
+    echo "  models cost          Show cost analysis"
+    echo ""
+    echo "Intelligent Routing (Phase 3):"
+    echo "  route \"<task>\"       Get enhanced routing recommendation"
+    echo "  route --strategy <s> Use specific strategy (quality-first, cost-optimized, learned)"
+    echo "  cascade status       Show cascade fallback state"
+    echo "  cascade reset        Reset failure tracking"
+    echo "  cascade config       Show cascade configuration"
+    echo "  learning tiers       Show patterns by confidence tier"
+    echo "  learning stats       Show learning statistics"
+    echo "  learning apply <p>   Manually apply a pattern"
+    echo "  multi-approach       Start multi-approach session"
+    echo "  multi-approach --analyze \"task\" Analyze without starting"
+    echo "  complexity \"task\"    Assess task complexity and token estimate"
+    echo "  safety               Run security scan on codebase"
+    echo "  context-init \"task\"  Initialize context for a task"
+    echo ""
+    echo "Advanced Execution (Phase 4):"
+    echo "  ctx-score score --task     Score context items by relevance"
+    echo "  ctx-score budget --tokens  Fit context within token budget"
+    echo "  ctx-score analyze --file   Analyze file for context inclusion"
+    echo "  confidence analyze \"<text>\" Analyze response confidence"
+    echo "  confidence check --file    Check confidence of file"
+    echo "  confidence stats           Show confidence statistics"
+    echo ""
+    echo "Input & Editing:"
+    echo "  guided-edit \"task\"       Step-by-step guided multi-file editing"
+    echo "  guided-edit status       Show current guided edit session"
+    echo ""
+    echo "Permissions:"
+    echo "  permissions list         List all granted permissions"
+    echo "  permissions grant <op>   Grant permission (session|always)"
+    echo "  permissions revoke <op>  Revoke permanent permission"
+    echo "  permissions clear-session Clear all session permissions"
+    echo "  permissions check <op>   Check if permission is granted"
+    echo ""
+    echo "MCP Tool Documentation:"
+    echo "  mcp-docs scan            Scan MCP servers and extract tool info"
+    echo "  mcp-docs list            List discovered MCP tools"
+    echo "  mcp-docs show <tool>     Show details for a specific tool"
+    echo "  mcp-docs generate        Generate markdown documentation"
+    echo "  mcp-docs context [task]  Get relevant MCP tools for a task"
+    echo ""
+    echo "Background Tasks:"
+    echo "  background run <task>    Run a task in background"
+    echo "  background status        Show running background tasks"
+    echo "  background list          List available background tasks"
+    echo "  background cancel <id>   Cancel a running task"
+    echo "  background logs [id]     Show task output logs"
+    echo ""
+    echo "Memory & Knowledge (v1.8):"
+    echo "  memory search <query>  Search stored facts"
+    echo "  memory stats           Show memory statistics"
+    echo "  memory-server          Start MCP memory server"
+    echo "  entropy                Show memory entropy stats"
+    echo "  entropy --auto         Auto-compact if entropy high"
+    echo "  entropy --history      Show entropy history"
+    echo "  compact-memory         Run full memory compaction"
+    echo "  compact-memory --preview Show what would be affected"
+    echo "  memory-sync            Check patterns for promotion"
+    echo "  memory-sync --auto     Auto-promote to decisions.md"
+    echo "  knowledge-sync status  Check knowledge files sync status"
+    echo "  knowledge-sync regenerate  Regenerate stale knowledge files"
+    echo "  knowledge-route <text> Detect route for a learning"
+    echo "  knowledge-route store  Store a learning with route"
+    echo "  log-manager status     Show request-log statistics"
+    echo "  log-manager archive    Archive old log entries"
+    echo ""
+    echo "Options:"
+    echo "  help, --help, -h     Show this help"
+    echo "  version, --version   Show version"
+}
+
+case "${1:-}" in
+    ready)
+        node "$SCRIPT_DIR/flow-ready.js" "${@:2}"
+        ;;
+    start)
+        node "$SCRIPT_DIR/flow-start.js" "${@:2}"
+        ;;
+    done)
+        node "$SCRIPT_DIR/flow-done.js" "${@:2}"
+        ;;
+    story)
+        node "$SCRIPT_DIR/flow-story.js" "${@:2}"
+        ;;
+    roadmap)
+        node "$SCRIPT_DIR/flow-roadmap.js" "${@:2}"
+        ;;
+    new-feature)
+        echo "Use 'flow story' or 'flow feature' instead."
+        exit 0
+        ;;
+    bug)
+        node "$SCRIPT_DIR/flow-bug.js" "${@:2}"
+        ;;
+    capture)
+        node "$SCRIPT_DIR/flow-capture.js" "${@:2}"
+        ;;
+    status)
+        node "$SCRIPT_DIR/flow-status.js" "${@:2}"
+        ;;
+    deps)
+        "$SCRIPT_DIR/flow-deps" "${@:2}"
+        ;;
+    health)
+        node "$SCRIPT_DIR/flow-health.js" "${@:2}"
+        ;;
+    safety)
+        node "$SCRIPT_DIR/flow-safety.js" "${@:2}"
+        ;;
+    damage-control|dc)
+        node "$SCRIPT_DIR/flow-damage-control.js" "${@:2}"
+        ;;
+    verify)
+        node "$SCRIPT_DIR/flow-verify.js" "${@:2}"
+        ;;
+    regression)
+        node "$SCRIPT_DIR/flow-regression.js" "${@:2}"
+        ;;
+    step)
+        node "$SCRIPT_DIR/flow-workflow-steps.js" "${@:2}"
+        ;;
+    run-trace)
+        node "$SCRIPT_DIR/flow-run-trace.js" "${@:2}"
+        ;;
+    history)
+        node "$SCRIPT_DIR/flow-run-trace.js" list "${@:2}"
+        ;;
+    inspect)
+        node "$SCRIPT_DIR/flow-run-trace.js" inspect "${@:2}"
+        ;;
+    diff)
+        node "$SCRIPT_DIR/flow-diff.js" "${@:2}"
+        ;;
+    checkpoint)
+        node "$SCRIPT_DIR/flow-checkpoint.js" "${@:2}"
+        ;;
+    standup)
+        "$SCRIPT_DIR/flow-standup" "${@:2}"
+        ;;
+    morning)
+        node "$SCRIPT_DIR/flow-morning.js" "${@:2}"
+        ;;
+    session-end)
+        node "$SCRIPT_DIR/flow-session-end.js" "${@:2}"
+        ;;
+    init|install)
+        "$SCRIPT_DIR/flow-init" "${@:2}"
+        ;;
+    onboard)
+        "$SCRIPT_DIR/flow-onboard" "${@:2}"
+        ;;
+    migrate)
+        node "$SCRIPT_DIR/flow-migrate.js" "${@:2}"
+        ;;
+    update)
+        echo "Use 'npm update wogiflow' to update WogiFlow."
+        exit 0
+        ;;
+    setup-hooks)
+        "$SCRIPT_DIR/flow-setup-hooks" "${@:2}"
+        ;;
+    hooks)
+        node "$SCRIPT_DIR/flow-hooks.js" "${@:2}"
+        ;;
+    statusline-setup|statusline)
+        node "$SCRIPT_DIR/flow-statusline-setup.js" "${@:2}"
+        ;;
+    update-map)
+        "$SCRIPT_DIR/flow-update-map" "${@:2}"
+        ;;
+    map-index)
+        "$SCRIPT_DIR/flow-map-index" "${@:2}"
+        ;;
+    map-sync)
+        "$SCRIPT_DIR/flow-map-sync" "${@:2}"
+        ;;
+    webmcp-generate)
+        node "$SCRIPT_DIR/flow-webmcp-generator.js" "${@:2}"
+        ;;
+    function-index)
+        node "$SCRIPT_DIR/flow-function-index.js" "${@:2}"
+        ;;
+    api-index)
+        node "$SCRIPT_DIR/flow-api-index.js" "${@:2}"
+        ;;
+    skill-learn)
+        node "$SCRIPT_DIR/flow-skill-learn.js" "${@:2}"
+        ;;
+    auto-learn)
+        node "$SCRIPT_DIR/flow-auto-learn.js" "${@:2}"
+        ;;
+    code-intel|code-intelligence)
+        node "$SCRIPT_DIR/flow-code-intelligence.js" "${@:2}"
+        ;;
+    error-recovery)
+        node "$SCRIPT_DIR/flow-error-recovery.js" "${@:2}"
+        ;;
+    epic|epics)
+        node "$SCRIPT_DIR/flow-epics.js" "${@:2}"
+        ;;
+    pattern-enforce)
+        node "$SCRIPT_DIR/flow-pattern-enforcer.js" "${@:2}"
+        ;;
+    review)
+        node "$SCRIPT_DIR/flow-review.js" "${@:2}"
+        ;;
+    peer-review)
+        node "$SCRIPT_DIR/flow-peer-review.js" "${@:2}"
+        ;;
+    correct)
+        node "$SCRIPT_DIR/flow-correct.js" "${@:2}"
+        ;;
+    aggregate)
+        node "$SCRIPT_DIR/flow-aggregate.js" "${@:2}"
+        ;;
+    skill-create)
+        node "$SCRIPT_DIR/flow-skill-create.js" "${@:2}"
+        ;;
+    trace)
+        "$SCRIPT_DIR/flow-trace" "${@:2}"
+        ;;
+    search)
+        "$SCRIPT_DIR/flow-search" "${@:2}"
+        ;;
+    context)
+        "$SCRIPT_DIR/flow-context" "${@:2}"
+        ;;
+    clarifying-questions|clarify)
+        node "$SCRIPT_DIR/flow-clarifying-questions.js" "${@:2}"
+        ;;
+    links)
+        node "$SCRIPT_DIR/flow-links.js" "${@:2}"
+        ;;
+    context-init)
+        node "$SCRIPT_DIR/flow-context-init.js" "${@:2}"
+        ;;
+    export-profile)
+        "$SCRIPT_DIR/flow-export-profile" "${@:2}"
+        ;;
+    import-profile)
+        "$SCRIPT_DIR/flow-import-profile" "${@:2}"
+        ;;
+    changelog)
+        "$SCRIPT_DIR/flow-changelog" "${@:2}"
+        ;;
+    archive)
+        "$SCRIPT_DIR/flow-archive" "${@:2}"
+        ;;
+    watch)
+        "$SCRIPT_DIR/flow-watch" "${@:2}"
+        ;;
+    parallel)
+        case "${2:-config}" in
+            config)
+                node "$SCRIPT_DIR/flow-parallel.js" config
+                ;;
+            check)
+                node "$SCRIPT_DIR/flow-parallel.js" check
+                ;;
+            enable)
+                node "$SCRIPT_DIR/flow-config-set.js" parallel.enabled true
+                ;;
+            disable)
+                node "$SCRIPT_DIR/flow-config-set.js" parallel.enabled false
+                ;;
+            auto-approve)
+                node "$SCRIPT_DIR/flow-config-set.js" parallel.autoApprove true
+                ;;
+            *)
+                echo "Usage: flow parallel [config|check|enable|disable|auto-approve]"
+                ;;
+        esac
+        ;;
+    loop)
+        case "${2:-status}" in
+            status)
+                node "$SCRIPT_DIR/flow-task-enforcer.js" status
+                ;;
+            stats)
+                node "$SCRIPT_DIR/flow-task-enforcer.js" stats
+                ;;
+            can-exit)
+                node "$SCRIPT_DIR/flow-task-enforcer.js" can-exit
+                ;;
+            enable)
+                node "$SCRIPT_DIR/flow-config-set.js" loops.enforced true
+                echo "Loop enforcement enabled"
+                ;;
+            disable)
+                node "$SCRIPT_DIR/flow-config-set.js" loops.enforced false
+                ;;
+            *)
+                echo "Usage: flow loop [status|stats|can-exit|enable|disable]"
+                ;;
+        esac
+        ;;
+    queue)
+        node "$SCRIPT_DIR/flow-queue.js" "${@:2}"
+        ;;
+    suspend)
+        node "$SCRIPT_DIR/flow-suspend.js" "${@:2}"
+        ;;
+    resume)
+        node "$SCRIPT_DIR/flow-resume.js" "${@:2}"
+        ;;
+    session)
+        case "${2:-status}" in
+            status)
+                node "$SCRIPT_DIR/flow-durable-session.js" status
+                ;;
+            stats)
+                node "$SCRIPT_DIR/flow-durable-session.js" stats
+                ;;
+            clear)
+                node "$SCRIPT_DIR/flow-durable-session.js" clear
+                ;;
+            *)
+                echo "Usage: flow session [status|stats|clear]"
+                ;;
+        esac
+        ;;
+    skill)
+        case "${2:-list}" in
+            detect)
+                node "$SCRIPT_DIR/flow-skill-matcher.js" --list
+                ;;
+            list)
+                node "$SCRIPT_DIR/flow-skill-matcher.js" --list
+                ;;
+            create)
+                if [ -z "$3" ]; then
+                    echo "Usage: flow skill create <name>"
+                else
+                    node "$SCRIPT_DIR/flow-skill-create.js" "$3"
+                fi
+                ;;
+            add)
+                # Install skill from registry
+                node -e "require('$PROJECT_ROOT/lib/skill-registry').skill(['add', '$3', ...process.argv.slice(2)])" -- "${@:4}"
+                ;;
+            remove)
+                # Remove installed skill
+                node -e "require('$PROJECT_ROOT/lib/skill-registry').skill(['remove', '$3'])"
+                ;;
+            update)
+                # Update skills
+                node -e "require('$PROJECT_ROOT/lib/skill-registry').skill(['update', '$3'])"
+                ;;
+            info)
+                # Show skill info
+                node -e "require('$PROJECT_ROOT/lib/skill-registry').skill(['info', '$3'])"
+                ;;
+            registry)
+                # List skills from registry
+                node -e "require('$PROJECT_ROOT/lib/skill-registry').skill(['list'])"
+                ;;
+            *)
+                echo "Usage: flow skill [detect|list|create|add|remove|update|info|registry]"
+                echo ""
+                echo "Local Skills:"
+                echo "  detect              Detect frameworks in project"
+                echo "  list                List installed skills"
+                echo "  create <name>       Create a new skill"
+                echo ""
+                echo "Registry Skills:"
+                echo "  registry            List available skills from registry"
+                echo "  add <name>          Install skill from registry"
+                echo "  remove <name>       Remove installed skill"
+                echo "  update [name]       Update skill(s)"
+                echo "  info <name>         Show skill details"
+                ;;
+        esac
+        ;;
+    worktree)
+        case "${2:-list}" in
+            enable)
+                node "$SCRIPT_DIR/flow-config-set.js" worktree.enabled true
+                echo "Tasks will now run in isolated git worktrees for safe parallel execution"
+                ;;
+            disable)
+                node "$SCRIPT_DIR/flow-config-set.js" worktree.enabled false
+                ;;
+            list)
+                node "$SCRIPT_DIR/flow-worktree.js" list
+                ;;
+            cleanup)
+                node "$SCRIPT_DIR/flow-worktree.js" cleanup
+                ;;
+            status)
+                node "$SCRIPT_DIR/flow-config-set.js" worktree
+                ;;
+            *)
+                echo "Usage: flow worktree [enable|disable|list|cleanup|status]"
+                ;;
+        esac
+        ;;
+    hybrid)
+        case "${2:-status}" in
+            setup)
+                echo "🔧 Setting up Hybrid Mode..."
+                echo ""
+                echo "Step 1: Generating project templates..."
+                node "$SCRIPT_DIR/flow-templates.js" generate
+                echo ""
+                echo "Step 2: Configuring local LLM..."
+                node "$SCRIPT_DIR/flow-hybrid-interactive.js"
+                ;;
+            enable)
+                node "$SCRIPT_DIR/flow-hybrid-interactive.js"
+                ;;
+            disable)
+                node "$SCRIPT_DIR/flow-config-set.js" hybrid.enabled false
+                ;;
+            status)
+                node "$SCRIPT_DIR/flow-config-set.js" hybrid
+                ;;
+            execute)
+                node "$SCRIPT_DIR/flow-orchestrate.js" "$3"
+                ;;
+            rollback)
+                node "$SCRIPT_DIR/flow-orchestrate.js" --rollback
+                ;;
+            test)
+                node "$SCRIPT_DIR/flow-hybrid-test.js"
+                ;;
+            learning)
+                case "${3:-stats}" in
+                    stats)
+                        node "$SCRIPT_DIR/flow-adaptive-learning.js" stats
+                        ;;
+                    export)
+                        node "$SCRIPT_DIR/flow-adaptive-learning.js" export
+                        ;;
+                    test)
+                        node "$SCRIPT_DIR/flow-adaptive-learning.js" test
+                        ;;
+                    contribute)
+                        shift 3
+                        node "$SCRIPT_DIR/flow-adaptive-learning.js" contribute "$@"
+                        ;;
+                    effectiveness)
+                        node "$SCRIPT_DIR/flow-adaptive-learning.js" effectiveness
+                        ;;
+                    *)
+                        echo "Usage: flow hybrid learning [stats|export|test|contribute|effectiveness]"
+                        echo ""
+                        echo "Commands:"
+                        echo "  stats         Show learning statistics (default)"
+                        echo "  export        Export learnings for community contribution"
+                        echo "  test          Test failure analysis with sample errors"
+                        echo "  contribute    Create/submit PR with learnings"
+                        echo "  effectiveness Show strategy success rates per model"
+                        echo ""
+                        echo "Contribute options:"
+                        echo "  --auto-pr               Create PR automatically"
+                        echo "  --fork=user/repo        Your fork (required for auto-pr)"
+                        ;;
+                esac
+                ;;
+            *)
+                echo "Usage: flow hybrid [enable|disable|status|execute|rollback|test|learning]"
+                ;;
+        esac
+        ;;
+    figma)
+        case "${2:-help}" in
+            scan)
+                node "$SCRIPT_DIR/flow-figma-index.js" scan
+                ;;
+            show)
+                node "$SCRIPT_DIR/flow-figma-index.js" show "$3"
+                ;;
+            export)
+                node "$SCRIPT_DIR/flow-figma-index.js" export
+                ;;
+            extract)
+                if [ -z "$3" ]; then
+                    node "$SCRIPT_DIR/flow-figma-extract.js"
+                else
+                    node "$SCRIPT_DIR/flow-figma-extract.js" "$3"
+                fi
+                ;;
+            match)
+                if [ -z "$3" ]; then
+                    node "$SCRIPT_DIR/flow-figma-match.js"
+                else
+                    node "$SCRIPT_DIR/flow-figma-match.js" "$3"
+                fi
+                ;;
+            confirm)
+                if [ -z "$3" ]; then
+                    node "$SCRIPT_DIR/flow-figma-confirm.js"
+                else
+                    node "$SCRIPT_DIR/flow-figma-confirm.js" "$3" "${@:4}"
+                fi
+                ;;
+            generate)
+                node "$SCRIPT_DIR/flow-figma-generate.js" "$3"
+                ;;
+            server)
+                if [ -z "$3" ]; then
+                    node "$SCRIPT_DIR/flow-figma-mcp-server.js" --http
+                else
+                    node "$SCRIPT_DIR/flow-figma-mcp-server.js" --http "$3"
+                fi
+                ;;
+            analyze)
+                # Full pipeline: extract + match
+                if [ -z "$3" ]; then
+                    echo "Usage: flow figma analyze <figma-data.json>"
+                    exit 1
+                fi
+                node "$SCRIPT_DIR/flow-figma-extract.js" "$3" | \
+                node "$SCRIPT_DIR/flow-figma-match.js" --stdin
+                ;;
+            *)
+                echo ""
+                echo "Figma Component Analyzer:"
+                echo "  figma scan              Scan codebase for components"
+                echo "  figma show [name]       Show component details (or list all)"
+                echo "  figma extract <file>    Extract from Figma MCP data"
+                echo "  figma match <file>      Match against registry"
+                echo "  figma analyze <file>    Extract + match (full pipeline)"
+                echo "  figma confirm <file>    Interactive confirmation"
+                echo "  figma generate [file]   Generate code from decisions"
+                echo "  figma server [port]     Start MCP server (default: 3847)"
+                echo ""
+                ;;
+        esac
+        ;;
+    templates)
+        node "$SCRIPT_DIR/flow-templates.js" "${2:-generate}"
+        ;;
+    providers)
+        node "$SCRIPT_DIR/flow-providers.js" "${@:2}"
+        ;;
+    bridge)
+        case "${2:-status}" in
+            sync)
+                node "$SCRIPT_DIR/flow-bridge.js" sync "${@:3}"
+                ;;
+            status)
+                node "$SCRIPT_DIR/flow-bridge.js" status
+                ;;
+            list)
+                node "$SCRIPT_DIR/flow-bridge.js" list
+                ;;
+            *)
+                echo "Usage: flow bridge [sync|status|list]"
+                echo ""
+                echo "Commands:"
+                echo "  sync    Sync .workflow/ config to CLI-specific folder"
+                echo "  status  Show current bridge configuration"
+                echo "  list    List available CLI bridges"
+                ;;
+        esac
+        ;;
+    channel)
+        # Release channel management
+        node -e "require('$PROJECT_ROOT/lib/release-channel').channel(process.argv.slice(2))" -- "${@:2}"
+        ;;
+    workflow)
+        node "$SCRIPT_DIR/flow-workflow.js" "${@:2}"
+        ;;
+    metrics)
+        node "$SCRIPT_DIR/flow-metrics.js" "${@:2}"
+        ;;
+    insights)
+        node "$SCRIPT_DIR/flow-project-analyzer.js" --insights "${@:2}"
+        ;;
+    auto-context)
+        node "$SCRIPT_DIR/flow-auto-context.js" "${@:2}"
+        ;;
+    model-adapter)
+        node "$SCRIPT_DIR/flow-model-adapter.js" "${@:2}"
+        ;;
+    models)
+        node "$SCRIPT_DIR/flow-models.js" "${@:2}"
+        ;;
+    route|model-route)
+        # Phase 3: Enhanced task routing
+        node "$SCRIPT_DIR/flow-model-router.js" "${@:2}"
+        ;;
+    cascade)
+        # Phase 3: Cascade fallback system
+        node "$SCRIPT_DIR/flow-cascade.js" "${@:2}"
+        ;;
+    learning)
+        # Phase 3: Tiered learning system
+        node "$SCRIPT_DIR/flow-tiered-learning.js" "${@:2}"
+        ;;
+    ctx-score)
+        # Phase 4: Context priority scoring
+        node "$SCRIPT_DIR/flow-context-scoring.js" "${@:2}"
+        ;;
+    confidence)
+        # Phase 4: Quality gate confidence
+        node "$SCRIPT_DIR/flow-gate-confidence.js" "${@:2}"
+        ;;
+    multi-approach)
+        node "$SCRIPT_DIR/flow-multi-approach.js" "${@:2}"
+        ;;
+    complexity)
+        node "$SCRIPT_DIR/flow-complexity.js" "${@:2}"
+        ;;
+    memory)
+        case "${2:-stats}" in
+            search)
+                # Search facts in memory - requires MCP server or direct DB access
+                echo "Memory search requires MCP server running."
+                echo "Start server with: flow memory-server"
+                echo "Or use the MCP client to call recall_facts tool."
+                ;;
+            stats)
+                # Show memory statistics
+                if [ -f "$PROJECT_ROOT/.workflow/memory/local.db" ]; then
+                    echo "Memory Statistics:"
+                    sqlite3 "$PROJECT_ROOT/.workflow/memory/local.db" "SELECT 'Facts: ' || COUNT(*) FROM facts; SELECT 'Proposals: ' || COUNT(*) FROM proposals; SELECT 'PRD Chunks: ' || COUNT(*) FROM prd_chunks;" 2>/dev/null || echo "  Database not initialized. Run memory-server first."
+                else
+                    echo "Memory database not found. Start MCP server to initialize."
+                fi
+                ;;
+            *)
+                echo "Usage: flow memory [search|stats]"
+                ;;
+        esac
+        ;;
+    memory-server)
+        echo "Starting MCP Memory Server..."
+        node "$PROJECT_ROOT/mcp-memory-server/index.js"
+        ;;
+    entropy)
+        node "$SCRIPT_DIR/flow-entropy-monitor.js" "${@:2}"
+        ;;
+    compact-memory)
+        node "$SCRIPT_DIR/flow-memory-compactor.js" "${@:2}"
+        ;;
+    memory-sync)
+        node "$SCRIPT_DIR/flow-memory-sync.js" "${@:2}"
+        ;;
+    knowledge-sync)
+        node "$SCRIPT_DIR/flow-knowledge-sync.js" "${@:2}"
+        ;;
+    knowledge-route)
+        case "${2:-}" in
+            detect|"")
+                if [ -z "$3" ]; then
+                    echo "Usage: flow knowledge-route detect \"<text>\""
+                else
+                    node "$SCRIPT_DIR/flow-knowledge-router.js" detect "${@:3}"
+                fi
+                ;;
+            store)
+                if [ -z "$3" ] || [ -z "$4" ]; then
+                    echo "Usage: flow knowledge-route store \"<text>\" <route-type>"
+                    echo "Route types: model-specific, skill:<name>, project, team"
+                else
+                    node "$SCRIPT_DIR/flow-knowledge-router.js" store "${@:3}"
+                fi
+                ;;
+            show)
+                if [ -z "$3" ]; then
+                    echo "Usage: flow knowledge-route show \"<text>\""
+                else
+                    node "$SCRIPT_DIR/flow-knowledge-router.js" show "${@:3}"
+                fi
+                ;;
+            routes)
+                node "$SCRIPT_DIR/flow-knowledge-router.js" routes
+                ;;
+            *)
+                echo "Usage: flow knowledge-route [detect|store|show|routes]"
+                ;;
+        esac
+        ;;
+    log-manager)
+        node "$SCRIPT_DIR/flow-log-manager.js" "${@:2}"
+        ;;
+    team)
+        echo "Team collaboration features are available in WogiFlow Pro."
+        echo "See: .workflow/archive/paid-features/README.md"
+        exit 0
+        ;;
+    prd)
+        node "$SCRIPT_DIR/flow-prd-manager.js" "${@:2}"
+        ;;
+    # NOTE: Jira and Linear integrations archived for paid version
+    # See .workflow/archive/paid-features/ for implementation
+    jira|linear|external-tasks)
+        echo "This feature is available in WogiFlow Pro."
+        echo "See: .workflow/archive/paid-features/README.md"
+        exit 0
+        ;;
+    sync-daemon)
+        echo "Sync daemon is available in WogiFlow Pro."
+        echo "See: .workflow/archive/paid-features/README.md"
+        exit 0
+        ;;
+    guided-edit)
+        node "$SCRIPT_DIR/flow-guided-edit.js" "${@:2}"
+        ;;
+    long-input|long-input-process|transcript-digest|digest)
+        # long-input is the new name, transcript-digest kept for backward compatibility
+        node "$SCRIPT_DIR/flow-long-input.js" "${@:2}"
+        ;;
+    permissions)
+        # Permission management (session vs permanent)
+        node "$SCRIPT_DIR/flow-permissions.js" "${@:2}"
+        ;;
+    mcp-docs)
+        # MCP tool documentation generator
+        node "$SCRIPT_DIR/flow-mcp-docs.js" "${@:2}"
+        ;;
+    background|bg)
+        # Background task execution
+        node "$SCRIPT_DIR/flow-background.js" "${@:2}"
+        ;;
+    version|--version|-v)
+        show_version
+        ;;
+    help|--help|-h)
+        case "${2:-}" in
+            --quick|-q)
+                show_quick_help
+                ;;
+            "")
+                show_help
+                ;;
+            *)
+                # Show help for specific command
+                echo "Help for: $2"
+                echo ""
+                case "$2" in
+                    ready) echo "Show tasks ready to work on. Reads from .workflow/state/ready.json" ;;
+                    start) echo "Start working on a task. Usage: flow start TASK-XXX" ;;
+                    done) echo "Complete a task, run quality gates. Usage: flow done TASK-XXX" ;;
+                    status) echo "Show project overview: tasks, git status, recent activity" ;;
+                    health) echo "Check workflow health: validate config, check files" ;;
+                    story) echo "Create detailed story with acceptance criteria. Usage: flow story \"title\"" ;;
+                    hybrid) echo "Manage hybrid mode. Subcommands: enable, disable, status, execute, test, learning" ;;
+                    parallel) echo "Manage parallel execution. Subcommands: config, check, enable, disable" ;;
+                    worktree) echo "Manage worktree isolation. Subcommands: enable, disable, list, cleanup" ;;
+                    long-input|long-input-process|transcript-digest|digest) echo "Long input processing. Ensures nothing missed from long prompts/transcripts/specs. Subcommands: status, new, check, topics, save-topics" ;;
+                    guided-edit) echo "Step-by-step guided multi-file editing. Usage: flow guided-edit \"task description\"" ;;
+                    *) echo "No detailed help for '$2'. Run 'flow help' for all commands." ;;
+                esac
+                ;;
+        esac
+        ;;
+    *)
+        show_quick_help
+        echo ""
+        echo "Unknown command: ${1:-}"
+        exit 1
+        ;;
+esac

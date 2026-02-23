@@ -1,0 +1,516 @@
+#!/bin/bash
+
+# Wogi Flow - Export Profile
+# Export workflow configuration for team sharing
+# v2.1: Enhanced with rules, learnings, and templates
+
+set -e
+
+WORKFLOW_DIR=".workflow"
+PROFILES_DIR="wogi-profiles"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+DIM='\033[2m'
+NC='\033[0m'
+
+show_help() {
+    echo "Export Workflow Profile"
+    echo ""
+    echo "Usage: flow export-profile <profile-name> [options]"
+    echo ""
+    echo "Categories:"
+    echo "  --rules          Include .claude/rules/ and decisions.md"
+    echo "  --learnings      Include feedback-patterns.md and skill learnings"
+    echo "  --templates      Include sanitized project.md and roadmap templates"
+    echo "  --full           Include everything (all categories + patterns)"
+    echo ""
+    echo "Pattern Extraction (NEW):"
+    echo "  --extract-patterns    Scan codebase and extract patterns"
+    echo "  --resolve-conflicts   Interactive conflict resolution (with --extract-patterns)"
+    echo "  --analysis-mode MODE  Analysis depth: balanced (default), deep"
+    echo "  --include-examples    Include code snippets as examples"
+    echo ""
+    echo "Legacy options:"
+    echo "  --include-decisions    Include decisions.md only"
+    echo "  --include-app-map      Include app-map.md (component registry)"
+    echo ""
+    echo "Examples:"
+    echo "  flow export-profile my-team --full"
+    echo "  flow export-profile my-team --extract-patterns --resolve-conflicts"
+    echo "  flow export-profile my-team --rules --learnings"
+    echo "  flow export-profile my-team --include-decisions"
+}
+
+if [ -z "$1" ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    show_help
+    exit 0
+fi
+
+PROFILE_NAME="$1"
+shift
+
+# Validate profile name to prevent path traversal
+if ! [[ "$PROFILE_NAME" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    echo -e "${RED}Error: Invalid profile name. Use only letters, numbers, underscores, and hyphens.${NC}"
+    exit 1
+fi
+
+# Safe JSON reading function (prevents code injection by using process.argv)
+safe_read_json() {
+    local file="$1"
+    local query="$2"
+    node -e '
+        const fs = require("fs");
+        const file = process.argv[1];
+        const query = process.argv[2];
+        try {
+            const content = fs.readFileSync(file, "utf-8");
+            // Check for prototype pollution attempts
+            if (/__proto__|constructor\s*["'"'"'`:]|prototype\s*["'"'"'`:]/i.test(content)) {
+                console.error("Suspicious content detected");
+                process.exit(1);
+            }
+            const p = JSON.parse(content);
+            // Safe property access based on query type
+            if (query === "conflicts.length") {
+                console.log(p.conflicts ? p.conflicts.length : 0);
+            } else if (query === "conflicts.json") {
+                console.log(JSON.stringify(p.conflicts, null, 2));
+            } else if (query === "recommendations.json") {
+                console.log(JSON.stringify(p.recommendations, null, 2));
+            } else {
+                console.error("Unknown query: " + query);
+                process.exit(1);
+            }
+        } catch(e) {
+            console.error(e.message);
+            process.exit(1);
+        }
+    ' -- "$file" "$query" 2>/dev/null
+}
+
+# Parse options
+INCLUDE_DECISIONS=false
+INCLUDE_APP_MAP=false
+INCLUDE_RULES=false
+INCLUDE_LEARNINGS=false
+INCLUDE_TEMPLATES=false
+EXTRACT_PATTERNS=false
+RESOLVE_CONFLICTS=false
+ANALYSIS_MODE="balanced"
+INCLUDE_EXAMPLES=false
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --include-decisions)
+            INCLUDE_DECISIONS=true
+            ;;
+        --include-app-map)
+            INCLUDE_APP_MAP=true
+            ;;
+        --rules)
+            INCLUDE_RULES=true
+            INCLUDE_DECISIONS=true  # Rules require decisions
+            ;;
+        --learnings)
+            INCLUDE_LEARNINGS=true
+            ;;
+        --templates)
+            INCLUDE_TEMPLATES=true
+            ;;
+        --extract-patterns)
+            EXTRACT_PATTERNS=true
+            ;;
+        --resolve-conflicts)
+            RESOLVE_CONFLICTS=true
+            ;;
+        --analysis-mode)
+            shift
+            ANALYSIS_MODE="$1"
+            ;;
+        --include-examples)
+            INCLUDE_EXAMPLES=true
+            ;;
+        --full)
+            INCLUDE_DECISIONS=true
+            INCLUDE_APP_MAP=true
+            INCLUDE_RULES=true
+            INCLUDE_LEARNINGS=true
+            INCLUDE_TEMPLATES=true
+            EXTRACT_PATTERNS=true
+            ;;
+        *)
+            echo -e "${RED}Unknown option: $1${NC}"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+# Determine scripts directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Create profiles directory
+mkdir -p "$PROFILES_DIR"
+
+# Create temp directory for profile
+TEMP_DIR=$(mktemp -d)
+PROFILE_DIR="$TEMP_DIR/$PROFILE_NAME"
+mkdir -p "$PROFILE_DIR/agents"
+mkdir -p "$PROFILE_DIR/.workflow"
+
+echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║  Exporting Profile: $PROFILE_NAME${NC}"
+echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+echo ""
+
+# Track what's included for metadata
+CONTENTS=""
+
+# ==========================================
+# CORE (always included)
+# ==========================================
+echo -e "${YELLOW}Core Files:${NC}"
+
+echo -e "  ${GREEN}✓${NC} CLAUDE.md"
+cp CLAUDE.md "$PROFILE_DIR/"
+CONTENTS="$CONTENTS\n- CLAUDE.md (core workflow instructions)"
+
+echo -e "  ${GREEN}✓${NC} agents/ ($(ls agents/*.md 2>/dev/null | wc -l | tr -d ' ') personas)"
+cp agents/*.md "$PROFILE_DIR/agents/" 2>/dev/null || true
+CONTENTS="$CONTENTS\n- agents/ (agent personas)"
+
+echo -e "  ${GREEN}✓${NC} config.json"
+cp "$WORKFLOW_DIR/config.json" "$PROFILE_DIR/.workflow/"
+CONTENTS="$CONTENTS\n- .workflow/config.json (configuration)"
+
+# ==========================================
+# RULES & DECISIONS
+# ==========================================
+if [ "$INCLUDE_DECISIONS" = true ] || [ "$INCLUDE_RULES" = true ]; then
+    echo ""
+    echo -e "${YELLOW}Rules & Decisions:${NC}"
+
+    # decisions.md
+    if [ -f "$WORKFLOW_DIR/state/decisions.md" ]; then
+        mkdir -p "$PROFILE_DIR/.workflow/state"
+        cp "$WORKFLOW_DIR/state/decisions.md" "$PROFILE_DIR/.workflow/state/"
+        echo -e "  ${GREEN}✓${NC} decisions.md"
+        CONTENTS="$CONTENTS\n- .workflow/state/decisions.md (project rules)"
+    fi
+
+    # .claude/rules/
+    if [ "$INCLUDE_RULES" = true ] && [ -d ".claude/rules" ]; then
+        mkdir -p "$PROFILE_DIR/.claude/rules"
+        # Copy all rule files except README.md (auto-generated)
+        for file in .claude/rules/*.md; do
+            if [ -f "$file" ] && [ "$(basename "$file")" != "README.md" ]; then
+                cp "$file" "$PROFILE_DIR/.claude/rules/"
+            fi
+        done
+        RULE_COUNT=$(ls "$PROFILE_DIR/.claude/rules/"*.md 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$RULE_COUNT" -gt 0 ]; then
+            echo -e "  ${GREEN}✓${NC} .claude/rules/ ($RULE_COUNT rules)"
+            CONTENTS="$CONTENTS\n- .claude/rules/ (coding rules)"
+        fi
+    fi
+fi
+
+# ==========================================
+# APP MAP (optional)
+# ==========================================
+if [ "$INCLUDE_APP_MAP" = true ] && [ -f "$WORKFLOW_DIR/state/app-map.md" ]; then
+    echo ""
+    echo -e "${YELLOW}Component Registry:${NC}"
+    mkdir -p "$PROFILE_DIR/.workflow/state"
+    cp "$WORKFLOW_DIR/state/app-map.md" "$PROFILE_DIR/.workflow/state/"
+    echo -e "  ${GREEN}✓${NC} app-map.md"
+    CONTENTS="$CONTENTS\n- .workflow/state/app-map.md (component registry)"
+fi
+
+# ==========================================
+# LEARNINGS
+# ==========================================
+if [ "$INCLUDE_LEARNINGS" = true ]; then
+    echo ""
+    echo -e "${YELLOW}Learnings:${NC}"
+
+    # feedback-patterns.md
+    if [ -f "$WORKFLOW_DIR/state/feedback-patterns.md" ]; then
+        mkdir -p "$PROFILE_DIR/.workflow/state"
+        cp "$WORKFLOW_DIR/state/feedback-patterns.md" "$PROFILE_DIR/.workflow/state/"
+        echo -e "  ${GREEN}✓${NC} feedback-patterns.md"
+        CONTENTS="$CONTENTS\n- .workflow/state/feedback-patterns.md (team learnings)"
+    fi
+
+    # Skill learnings (patterns.md and learnings.md from each skill)
+    if [ -d ".claude/skills" ]; then
+        SKILL_COUNT=0
+        for skill_dir in .claude/skills/*/; do
+            if [ -d "$skill_dir/knowledge" ]; then
+                skill_name=$(basename "$skill_dir")
+                mkdir -p "$PROFILE_DIR/.claude/skills/$skill_name/knowledge"
+
+                # Copy patterns.md if exists
+                if [ -f "$skill_dir/knowledge/patterns.md" ]; then
+                    cp "$skill_dir/knowledge/patterns.md" "$PROFILE_DIR/.claude/skills/$skill_name/knowledge/"
+                    SKILL_COUNT=$((SKILL_COUNT + 1))
+                fi
+
+                # Copy learnings.md if exists
+                if [ -f "$skill_dir/knowledge/learnings.md" ]; then
+                    cp "$skill_dir/knowledge/learnings.md" "$PROFILE_DIR/.claude/skills/$skill_name/knowledge/"
+                fi
+            fi
+        done
+
+        if [ "$SKILL_COUNT" -gt 0 ]; then
+            echo -e "  ${GREEN}✓${NC} skill learnings ($SKILL_COUNT skills)"
+            CONTENTS="$CONTENTS\n- .claude/skills/*/knowledge/ (skill learnings)"
+        fi
+    fi
+fi
+
+# ==========================================
+# TEMPLATES (sanitized)
+# ==========================================
+if [ "$INCLUDE_TEMPLATES" = true ]; then
+    echo ""
+    echo -e "${YELLOW}Templates:${NC}"
+    mkdir -p "$PROFILE_DIR/templates"
+
+    # Sanitize and export project.md as template
+    if [ -f "$WORKFLOW_DIR/specs/project.md" ]; then
+        # Create a sanitized template (remove project-specific content)
+        cat > "$PROFILE_DIR/templates/project-template.md" << 'TEMPLATE_EOF'
+# Project Specification Template
+
+## Overview
+<!-- Fill in your project details -->
+**Name**: [PROJECT_NAME]
+**Description**: [PROJECT_DESCRIPTION]
+
+## Tech Stack
+<!-- Detected during onboarding -->
+- **Language**:
+- **Framework**:
+- **Database**:
+- **Package Manager**:
+
+## Architecture
+<!-- Document your architecture here -->
+
+## Key Components
+<!-- Auto-populated from codebase scan -->
+
+## Conventions
+<!-- Team conventions and standards -->
+
+## Goals
+<!-- Current project goals -->
+TEMPLATE_EOF
+        echo -e "  ${GREEN}✓${NC} project-template.md"
+        CONTENTS="$CONTENTS\n- templates/project-template.md"
+    fi
+
+    # Sanitize and export roadmap as template
+    if [ -f "$WORKFLOW_DIR/roadmap/roadmap.md" ]; then
+        cat > "$PROFILE_DIR/templates/roadmap-template.md" << 'ROADMAP_EOF'
+# Project Roadmap Template
+
+## Priority Levels
+- **P0**: Critical - Drop everything
+- **P1**: High - Do today
+- **P2**: Medium - Do this week
+- **P3**: Low - Do when possible
+- **P4**: Backlog - Someday
+
+## Current Sprint
+<!-- Add current sprint items -->
+
+## Upcoming
+<!-- Add upcoming work -->
+
+## Backlog
+<!-- Add backlog items -->
+
+## Completed
+<!-- Move completed items here -->
+ROADMAP_EOF
+        echo -e "  ${GREEN}✓${NC} roadmap-template.md"
+        CONTENTS="$CONTENTS\n- templates/roadmap-template.md"
+    fi
+fi
+
+# ==========================================
+# PATTERN EXTRACTION (NEW)
+# ==========================================
+if [ "$EXTRACT_PATTERNS" = true ]; then
+    echo ""
+    echo -e "${YELLOW}Pattern Extraction:${NC}"
+
+    mkdir -p "$PROFILE_DIR/.workflow/extracted"
+
+    # Build extractor options
+    EXTRACTOR_OPTS="--format json --with-conflicts --analysis-mode $ANALYSIS_MODE"
+
+    # Run pattern extraction
+    echo -e "  ${DIM}Scanning codebase for patterns...${NC}"
+    PATTERNS_OUTPUT="$PROFILE_DIR/.workflow/extracted/patterns.json"
+
+    if node "$SCRIPT_DIR/flow-pattern-extractor.js" $EXTRACTOR_OPTS --output "$PATTERNS_OUTPUT" 2>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} patterns.json"
+        CONTENTS="$CONTENTS\n- .workflow/extracted/patterns.json (extracted patterns)"
+
+        # Check for conflicts (using safe JSON parsing instead of require())
+        CONFLICT_COUNT=$(safe_read_json "$PATTERNS_OUTPUT" "conflicts.length" || echo "0")
+
+        if [ "$CONFLICT_COUNT" -gt 0 ]; then
+            echo -e "  ${YELLOW}!${NC} Found $CONFLICT_COUNT conflicts"
+
+            # Run conflict resolution if requested
+            if [ "$RESOLVE_CONFLICTS" = true ]; then
+                # Extract conflicts to temp file (using safe JSON parsing)
+                CONFLICTS_TEMP=$(mktemp)
+                safe_read_json "$PATTERNS_OUTPUT" "conflicts.json" > "$CONFLICTS_TEMP"
+
+                echo -e "  ${DIM}Launching conflict resolver...${NC}"
+
+                RESOLVED_OUTPUT="$PROFILE_DIR/.workflow/extracted/conflicts-resolved.json"
+                if node "$SCRIPT_DIR/flow-conflict-resolver.js" --input "$CONFLICTS_TEMP" --output "$RESOLVED_OUTPUT"; then
+                    echo -e "  ${GREEN}✓${NC} conflicts-resolved.json"
+                    CONTENTS="$CONTENTS\n- .workflow/extracted/conflicts-resolved.json (user resolutions)"
+                else
+                    echo -e "  ${YELLOW}!${NC} Conflict resolution skipped or cancelled"
+                fi
+
+                rm -f "$CONFLICTS_TEMP"
+            fi
+        else
+            echo -e "  ${GREEN}✓${NC} No conflicting patterns found"
+        fi
+
+        # Extract examples if requested
+        if [ "$INCLUDE_EXAMPLES" = true ]; then
+            mkdir -p "$PROFILE_DIR/.workflow/extracted/examples"
+
+            # Extract example snippets from patterns (using safe JSON parsing)
+            node -e "
+                const fs = require('fs');
+                const path = require('path');
+
+                try {
+                    const content = fs.readFileSync('$PATTERNS_OUTPUT', 'utf-8');
+                    // Check for prototype pollution attempts
+                    if (/__proto__|constructor\\s*[\"'\`:]|prototype\\s*[\"'\`:]/i.test(content)) {
+                        console.error('Suspicious content detected');
+                        process.exit(1);
+                    }
+                    const p = JSON.parse(content);
+
+                    let count = 0;
+                    for (const category in p.patterns) {
+                        for (const pattern of p.patterns[category] || []) {
+                            if (pattern.examples && pattern.examples.length > 0) {
+                                const filename = pattern.subcategory.replace(/\\./g, '-') + '.txt';
+                                const fileContent = pattern.name + '\\n' + '='.repeat(40) + '\\n\\n' +
+                                    pattern.examples.slice(0, 5).join('\\n');
+                                fs.writeFileSync(
+                                    path.join('$PROFILE_DIR/.workflow/extracted/examples', filename),
+                                    fileContent
+                                );
+                                count++;
+                            }
+                        }
+                    }
+                    console.log(count);
+                } catch(e) {
+                    console.error(e.message);
+                    process.exit(1);
+                }
+            " 2>/dev/null || true
+
+            EXAMPLE_COUNT=$(ls "$PROFILE_DIR/.workflow/extracted/examples/"*.txt 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$EXAMPLE_COUNT" -gt 0 ]; then
+                echo -e "  ${GREEN}✓${NC} examples/ ($EXAMPLE_COUNT pattern examples)"
+                CONTENTS="$CONTENTS\n- .workflow/extracted/examples/ (code snippets)"
+            fi
+        fi
+    else
+        echo -e "  ${RED}✗${NC} Pattern extraction failed (continuing without patterns)"
+    fi
+fi
+
+# ==========================================
+# Create profile info file
+# ==========================================
+cat > "$PROFILE_DIR/PROFILE.md" << EOF
+# Wogi Flow Profile: $PROFILE_NAME
+
+Exported: $(date +%Y-%m-%d\ %H:%M)
+Source: $(git remote get-url origin 2>/dev/null || echo "local")
+Version: 2.1
+
+## Contents
+$(echo -e "$CONTENTS")
+
+## Import Instructions
+
+### New Project (during installation)
+\`\`\`bash
+./scripts/flow install
+# Select option 2: "Import from existing profile"
+# Enter path: $PROFILE_NAME.zip
+\`\`\`
+
+### Existing Project
+\`\`\`bash
+./scripts/flow import-profile $PROFILE_NAME.zip
+\`\`\`
+
+## Import Options
+\`\`\`bash
+# Preview what would be imported
+./scripts/flow import-profile $PROFILE_NAME.zip --dry-run
+
+# Create backup before importing
+./scripts/flow import-profile $PROFILE_NAME.zip --backup
+
+# Skip importing learnings
+./scripts/flow import-profile $PROFILE_NAME.zip --skip-learnings
+\`\`\`
+
+## Configuration Summary
+\`\`\`json
+$(head -30 "$WORKFLOW_DIR/config.json")
+...
+\`\`\`
+EOF
+
+# ==========================================
+# Create zip
+# ==========================================
+OUTPUT_FILE="$PROFILES_DIR/$PROFILE_NAME.zip"
+(cd "$TEMP_DIR" && zip -r "$PROFILE_NAME.zip" "$PROFILE_NAME" > /dev/null)
+mv "$TEMP_DIR/$PROFILE_NAME.zip" "$OUTPUT_FILE"
+
+# Cleanup
+rm -rf "$TEMP_DIR"
+
+# Calculate size
+SIZE=$(ls -lh "$OUTPUT_FILE" | awk '{print $5}')
+
+echo ""
+echo -e "${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║  ✓ Profile exported successfully                         ║${NC}"
+echo -e "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "  ${CYAN}File:${NC} $OUTPUT_FILE"
+echo -e "  ${CYAN}Size:${NC} $SIZE"
+echo ""
+echo -e "${DIM}Share this file with team members.${NC}"
+echo -e "${DIM}Import with: ./scripts/flow import-profile $OUTPUT_FILE${NC}"

@@ -1,0 +1,48 @@
+{
+  "features": {
+    "ft-37e277e7": {
+      "id": "ft-37e277e7",
+      "title": "Core API Infrastructure",
+      "parent": null,
+      "stories": [
+        "wf-cfbf29f1",
+        "wf-f548c77a",
+        "wf-4d288338",
+        "wf-d4b6a59f",
+        "wf-fa3de969"
+      ],
+      "status": "ready",
+      "progress": 0,
+      "createdAt": "2026-02-23T15:37:41.210Z",
+      "updatedAt": "2026-02-23T15:38:44.580Z"
+    },
+    "ft-cab4f180": {
+      "id": "ft-cab4f180",
+      "title": "Database Layer",
+      "parent": null,
+      "stories": [
+        "wf-607119a1",
+        "wf-fce9b3c6"
+      ],
+      "status": "ready",
+      "progress": 0,
+      "createdAt": "2026-02-23T15:37:45.732Z",
+      "updatedAt": "2026-02-23T15:38:44.899Z"
+    },
+    "ft-27ad4502": {
+      "id": "ft-27ad4502",
+      "title": "Developer Tooling",
+      "parent": null,
+      "stories": [
+        "wf-bc6bf0fb",
+        "wf-49745460"
+      ],
+      "status": "ready",
+      "progress": 0,
+      "createdAt": "2026-02-23T15:37:50.067Z",
+      "updatedAt": "2026-02-23T15:38:45.172Z"
+    }
+  },
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-23T15:38:45.172Z"
+}
