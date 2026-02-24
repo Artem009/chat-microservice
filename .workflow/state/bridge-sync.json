@@ -1,11 +1,11 @@
 {
   "syncs": {
     "claude-code": {
-      "lastSync": "2026-02-24T13:21:46.541Z",
-      "configHash": "717689528864535fb39e1a81217ce3da",
+      "lastSync": "2026-02-24T16:30:56.470Z",
+      "configHash": "13373d48a133126ba1033cdf35d81a32",
       "templateHash": "96d290da4dbd24f573c6715ec5a23d8c"
     }
   },
   "version": 1,
-  "lastConfigHash": "717689528864535fb39e1a81217ce3da"
+  "lastConfigHash": "13373d48a133126ba1033cdf35d81a32"
 }
