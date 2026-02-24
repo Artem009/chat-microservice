@@ -12,10 +12,11 @@ Architecture follows reference patterns from comment-microservice.
 
 | Module | Purpose | File | Status |
 |--------|---------|------|--------|
-| AppModule | Root module, imports PrismaModule + ConversationModule + MessageModule | src/app.module.ts | Active |
+| AppModule | Root module, imports PrismaModule + ConversationModule + MessageModule + ParticipantModule | src/app.module.ts | Active |
 | PrismaModule | Database access, exports PrismaService | src/prisma/prisma.module.ts | Active |
 | ConversationModule | Conversation CRUD, imports PrismaModule | src/conversation/conversation.module.ts | Active |
 | MessageModule | Message CRUD scoped to conversations, imports PrismaModule | src/message/message.module.ts | Active |
+| ParticipantModule | Participant management (add/remove/role), imports PrismaModule | src/participant/participant.module.ts | Active |
 
 ## Controllers
 <!-- PIN: controllers -->
@@ -33,8 +34,12 @@ Architecture follows reference patterns from comment-microservice.
 | GetMessageController | /api/message/:id | GET | MessageModule | src/message/controllers/get-message.controller.ts |
 | UpdateMessageController | /api/message/:id | PATCH | MessageModule | src/message/controllers/update-message.controller.ts |
 | DeleteMessageController | /api/message/:id | DELETE | MessageModule | src/message/controllers/delete-message.controller.ts |
+| AddParticipantController | /api/participant | POST | ParticipantModule | src/participant/controllers/add-participant.controller.ts |
+| ListParticipantController | /api/participant | GET | ParticipantModule | src/participant/controllers/list-participant.controller.ts |
+| UpdateParticipantController | /api/participant/:id | PATCH | ParticipantModule | src/participant/controllers/update-participant.controller.ts |
+| RemoveParticipantController | /api/participant/:id | DELETE | ParticipantModule | src/participant/controllers/remove-participant.controller.ts |
 
-**Base classes:** `BaseController` — per-module base for feature controllers (`src/conversation/controllers/base.controller.ts`, `src/message/controllers/base.controller.ts`)
+**Base classes:** `BaseController` — per-module base for feature controllers (`src/conversation/controllers/base.controller.ts`, `src/message/controllers/base.controller.ts`, `src/participant/controllers/base.controller.ts`)
 
 ## Services
 <!-- PIN: services -->
@@ -45,6 +50,7 @@ Architecture follows reference patterns from comment-microservice.
 | PrismaService | PrismaModule | src/prisma/prisma.service.ts | Active |
 | ConversationService | ConversationModule | src/conversation/conversation.service.ts | Active |
 | MessageService | MessageModule | src/message/message.service.ts | Active |
+| ParticipantService | ParticipantModule | src/participant/participant.service.ts | Active |
 
 ## DTOs
 <!-- PIN: dto -->
@@ -55,6 +61,8 @@ Architecture follows reference patterns from comment-microservice.
 | UpdateConversationDto | ConversationModule | src/conversation/dto/update-conversation.dto.ts | title?, type? (PartialType) |
 | CreateMessageDto | MessageModule | src/message/dto/create-message.dto.ts | content, conversationId, senderId |
 | UpdateMessageDto | MessageModule | src/message/dto/update-message.dto.ts | content? |
+| AddParticipantDto | ParticipantModule | src/participant/dto/add-participant.dto.ts | conversationId, userId, role? |
+| UpdateParticipantDto | ParticipantModule | src/participant/dto/update-participant.dto.ts | role |
 
 ## Common
 <!-- PIN: common -->
@@ -70,6 +78,7 @@ Architecture follows reference patterns from comment-microservice.
 | Exception | HTTP Status | File |
 |-----------|-------------|------|
 | BadRequestException | 400 | src/exeption/bad-request.exception.ts |
+| ConflictException | 409 | src/exeption/conflict.exception.ts |
 | NotFoundException | 404 | src/exeption/not-found.exception.ts |
 | ErrorInterface | — (type) | src/exeption/error-interface.ts |
 

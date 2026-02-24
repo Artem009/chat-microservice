@@ -1,6 +1,9 @@
 {
-  "lastUpdated": "2026-02-24T16:33:36.872Z",
-  "ready": [
+  "lastUpdated": "2026-02-24T17:08:33.594Z",
+  "ready": [],
+  "inProgress": [],
+  "blocked": [],
+  "recentlyCompleted": [
     {
       "id": "wf-participant-module",
       "title": "Create Participant module with management endpoints",
@@ -11,12 +14,10 @@
         "#domain",
         "#participant",
         "#crud"
-      ]
-    }
-  ],
-  "inProgress": [],
-  "blocked": [],
-  "recentlyCompleted": [
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-24T17:08:33.594Z"
+    },
     {
       "id": "wf-message-module",
       "title": "Create Message module with CRUD",

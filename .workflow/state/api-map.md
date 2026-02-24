@@ -31,9 +31,14 @@ API endpoints and client functions. **Check before creating new endpoints.**
 | GET | /api/message/:id | GetMessageController | MessageService | src/message/controllers/get-message.controller.ts |
 | PATCH | /api/message/:id | UpdateMessageController | MessageService | src/message/controllers/update-message.controller.ts |
 | DELETE | /api/message/:id | DeleteMessageController | MessageService | src/message/controllers/delete-message.controller.ts |
+| POST | /api/participant | AddParticipantController | ParticipantService | src/participant/controllers/add-participant.controller.ts |
+| GET | /api/participant?conversationId | ListParticipantController | ParticipantService | src/participant/controllers/list-participant.controller.ts |
+| PATCH | /api/participant/:id | UpdateParticipantController | ParticipantService | src/participant/controllers/update-participant.controller.ts |
+| DELETE | /api/participant/:id | RemoveParticipantController | ParticipantService | src/participant/controllers/remove-participant.controller.ts |
 
-**Auth:** All `/api/conversation` and `/api/message` endpoints require `authorization` header.
+**Auth:** All `/api/conversation`, `/api/message`, and `/api/participant` endpoints require `authorization` header.
 **Response format:** `{ data: ... }` envelope. DELETE also includes `message`.
+**Special:** POST /api/participant returns 409 ConflictException for duplicate active participants; supports rejoin for left participants.
 
 ## Client Functions
 

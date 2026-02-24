@@ -5,27 +5,7 @@
 ## Now (Current Focus)
 <!-- PIN: now -->
 
-### Create Message module with CRUD
-- **Task:** wf-message-module
-- **Priority:** P1
-- **Feature:** ft-data-layer
-- **Tags:** #domain #message #crud
-- **Depends On:** wf-prisma-models (completed)
-- **Key Files:**
-  - prisma/models/message.prisma — Message model definition
-  - src/conversation/ — Reference implementation pattern
-
-### Create Participant module with management endpoints
-- **Task:** wf-participant-module
-- **Priority:** P1
-- **Feature:** ft-data-layer
-- **Tags:** #domain #participant #crud
-- **Depends On:** wf-prisma-models (completed)
-- **Key Files:**
-  - prisma/models/participant.prisma — Participant model definition
-  - src/conversation/ — Reference implementation pattern
-
-> These two tasks can run **in parallel** (no dependencies between them).
+_No active tasks. All data-layer modules complete._
 
 ---
 
@@ -37,7 +17,7 @@
 - **Priority:** P2
 - **Feature:** ft-realtime
 - **Tags:** #domain #websocket #realtime
-- **Depends On:** wf-message-module
+- **Depends On:** wf-message-module (completed)
 - **Assumes:**
   - Message module provides CRUD operations for WebSocket to emit events
   - NestJS @WebSocketGateway decorator with Fastify adapter compatibility
@@ -98,6 +78,18 @@ _No items yet._
 - **Type:** feature
 - **Result:** 3 models (Conversation, Message, Participant) + migration
 
+### Create Participant module with management endpoints
+- **Task:** wf-participant-module
+- **Completed:** 2026-02-24
+- **Type:** feature
+- **Result:** 4 controllers, service, 2 DTOs, ConflictException, 17 tests
+
+### Create Message module with CRUD
+- **Task:** wf-message-module
+- **Completed:** 2026-02-24
+- **Type:** feature
+- **Result:** 5 controllers, service, 2 DTOs, 15 tests, pagination support
+
 ### Create Conversation module with CRUD
 - **Task:** wf-conversation-module
 - **Completed:** 2026-02-23
@@ -110,9 +102,9 @@ _No items yet._
 
 ```
 [completed] prisma-models
-    ├──→ [ready] message-module ──→ [blocked] websocket-gateway ──→ [blocked] read-receipts
-    │                                                            ──→ [blocked] typing-presence
-    └──→ [ready] participant-module (independent)
+    ├──→ [completed] message-module ──→ [ready] websocket-gateway ──→ [blocked] read-receipts
+    │                                                             ──→ [blocked] typing-presence
+    └──→ [completed] participant-module
 
 [completed] conversation-module (independent, already done)
 ```

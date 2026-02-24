@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-016 | 2026-02-24
+**Type**: feature
+**Tags**: #domain #participant #crud
+**Request**: "Create Participant module with management endpoints (wf-participant-module)"
+**Result**: Created participant module with 4 action controllers (add, list, update role, remove). ParticipantService with CRUD + findByConversationAndUser for duplicate detection. Add endpoint handles 3 cases: new participant (create), active duplicate (409 ConflictException), and rejoin (reset leftAt). List filters by conversationId + leftAt:null. Update changes role (ADMIN/MEMBER). Remove uses soft-delete via leftAt. Created ConflictException (409) in src/exeption/ following existing pattern. DTOs with ParticipantRole enum validation. 17 unit tests covering service + all controllers + error cases. Wired into AppModule.
+**Files**: src/exeption/conflict.exception.ts, src/exeption/index.ts, src/participant/participant.module.ts, src/participant/participant.service.ts, src/participant/controllers/base.controller.ts, src/participant/controllers/add-participant.controller.ts, src/participant/controllers/list-participant.controller.ts, src/participant/controllers/update-participant.controller.ts, src/participant/controllers/remove-participant.controller.ts, src/participant/dto/add-participant.dto.ts, src/participant/dto/update-participant.dto.ts, src/participant/participant.spec.ts, src/app.module.ts
+
+---
+
 ### R-015 | 2026-02-24
 **Type**: feature
 **Tags**: #domain #message #crud
