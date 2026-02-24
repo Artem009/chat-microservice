@@ -11,7 +11,10 @@
     "stateManagement": null,
     "forms": null,
     "styling": null,
-    "testing": ["Jest", "Supertest"],
+    "testing": [
+      "Jest",
+      "Supertest"
+    ],
     "httpAdapter": "Fastify",
     "apiDocs": "Swagger",
     "validation": "class-validator",
@@ -26,13 +29,42 @@
     }
   },
   "qualityGates": {
-    "feature": { "require": ["lint", "typecheck", "tests", "requestLogEntry", "appMapUpdate"] },
-    "bugfix": { "require": ["lint", "typecheck", "requestLogEntry"] },
-    "refactor": { "require": ["lint", "typecheck", "requestLogEntry"] },
-    "docs": { "require": ["requestLogEntry"] }
+    "feature": {
+      "require": [
+        "lint",
+        "typecheck",
+        "tests",
+        "requestLogEntry",
+        "appMapUpdate"
+      ]
+    },
+    "bugfix": {
+      "require": [
+        "lint",
+        "typecheck",
+        "requestLogEntry"
+      ]
+    },
+    "refactor": {
+      "require": [
+        "lint",
+        "typecheck",
+        "requestLogEntry"
+      ]
+    },
+    "docs": {
+      "require": [
+        "requestLogEntry"
+      ]
+    }
   },
   "commits": {
-    "requireApproval": { "feature": true, "bugfix": false, "refactor": true, "docs": false },
+    "requireApproval": {
+      "feature": true,
+      "bugfix": false,
+      "refactor": true,
+      "docs": false
+    },
     "autoCommitSmallFixes": true,
     "smallFixThreshold": 3
   },
@@ -53,8 +85,12 @@
     "name": "chat-microservice-2",
     "type": "Backend/API Only",
     "state": "maintenance",
-    "goals": ["accelerate-development"],
-    "onboardedAt": "2026-02-23T00:00:00.000Z"
+    "goals": [
+      "accelerate-development"
+    ],
+    "onboardedAt": "2026-02-23T00:00:00.000Z",
+    "lastRescanAt": "2026-02-24T00:00:00.000Z",
+    "rescanCount": 1
   },
   "createdAt": "2026-02-23T00:00:00.000Z"
 }

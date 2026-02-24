@@ -16,6 +16,7 @@ const { checkScopeGate } = require('../../core/scope-gate');
 const { checkComponentReuse } = require('../../core/component-check');
 const { checkTodoWriteGate } = require('../../core/todowrite-gate');
 const { checkRoutingGate, clearRoutingPending } = require('../../core/routing-gate');
+const { checkPhaseGate } = require('../../core/phase-gate');
 const { claudeCodeAdapter } = require('../../adapters/claude-code');
 const { markSkillPending } = require('../../../flow-durable-session');
 const { safeJsonParseString } = require('../../../flow-utils');
@@ -92,6 +93,21 @@ async function main() {
 
     let coreResult = { allowed: true, blocked: false };
 
+    // Phase gate check — blocks tools not allowed in current workflow phase
+    // Runs before all other gates. Fail-open: errors skip the check.
+    try {
+      const phaseResult = checkPhaseGate(toolName, toolInput);
+      if (phaseResult.blocked) {
+        coreResult = { allowed: false, blocked: true, reason: phaseResult.reason, message: phaseResult.message };
+        const output = claudeCodeAdapter.transformResult('PreToolUse', coreResult);
+        console.log(JSON.stringify(output));
+        process.exit(0);
+        return;
+      }
+    } catch (err) {
+      if (process.env.DEBUG) console.error(`[Hook] Phase gate error (fail-open): ${err.message}`);
+    }
+
     // Task + scope gating check (for Edit and Write)
     // v4.0: checkScopeGate wraps checkTaskGate and adds scope validation
     if (toolName === 'Edit' || toolName === 'Write') {
@@ -151,9 +167,9 @@ async function main() {
       }
     }
 
-    // v6.0: Routing gate check (for Bash and EnterPlanMode)
-    // Blocks Bash/EnterPlanMode calls when no /wogi-* command has been invoked first
-    if (toolName === 'Bash' || toolName === 'EnterPlanMode') {
+    // v6.0: Routing gate check (for Bash, EnterPlanMode, Read, Glob, Grep)
+    // Blocks tool calls when no /wogi-* command has been invoked first
+    if (toolName === 'Bash' || toolName === 'EnterPlanMode' || toolName === 'Read' || toolName === 'Glob' || toolName === 'Grep') {
       try {
         const routingResult = checkRoutingGate(toolName);
         if (routingResult.blocked) {

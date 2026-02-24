@@ -7,7 +7,10 @@ enum ConversationType {
 }
 
 export class UpdateConversationDto {
-  @ApiPropertyOptional({ description: 'Conversation title' })
+  @ApiPropertyOptional({
+    description: 'Conversation title',
+    example: 'Updated Chat Title',
+  })
   @IsOptional()
   @IsString()
   title?: string;
@@ -15,6 +18,7 @@ export class UpdateConversationDto {
   @ApiPropertyOptional({
     description: 'Conversation type',
     enum: ConversationType,
+    example: ConversationType.DIRECT,
   })
   @IsOptional()
   @IsEnum(ConversationType)

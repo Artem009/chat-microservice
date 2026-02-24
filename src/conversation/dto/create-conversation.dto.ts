@@ -6,7 +6,6 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { LocalApiProperty } from '../../common/decorators/local-api-property.decorator';
 
 enum ConversationType {
   DIRECT = 'DIRECT',
@@ -14,7 +13,10 @@ enum ConversationType {
 }
 
 export class CreateConversationDto {
-  @ApiPropertyOptional({ description: 'Conversation title (for group chats)' })
+  @ApiPropertyOptional({
+    description: 'Conversation title (for group chats)',
+    example: 'Project Discussion',
+  })
   @IsOptional()
   @IsString()
   title?: string;
@@ -23,6 +25,7 @@ export class CreateConversationDto {
     description: 'Conversation type',
     enum: ConversationType,
     default: ConversationType.GROUP,
+    example: ConversationType.GROUP,
   })
   @IsOptional()
   @IsEnum(ConversationType)
@@ -31,14 +34,20 @@ export class CreateConversationDto {
   @ApiProperty({
     description: 'User IDs to add as participants',
     type: [String],
+    example: [
+      '550e8400-e29b-41d4-a716-446655440001',
+      '550e8400-e29b-41d4-a716-446655440002',
+    ],
   })
   @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })
   participantIds!: string[];
 
-  @LocalApiProperty({
+  @ApiProperty({
     description: 'Current user ID (from auth in production)',
+    type: String,
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @IsNotEmpty()
   currentUserId!: string;

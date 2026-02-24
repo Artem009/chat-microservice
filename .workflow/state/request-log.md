@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-014 | 2026-02-24
+**Type**: change
+**Tags**: #swagger #dto #documentation
+**Request**: "Add Swagger example data with UUID examples to DTOs (wf-fc80a97c)"
+**Result**: Added example values to all @ApiProperty/@ApiPropertyOptional decorators in CreateConversationDto and UpdateConversationDto. Examples include realistic UUIDs for participantIds and currentUserId. Removed unused LocalApiProperty import from create-conversation.dto.ts.
+**Files**: src/conversation/dto/create-conversation.dto.ts, src/conversation/dto/update-conversation.dto.ts
+
+---
+
 ### R-013 | 2026-02-23
 **Type**: feature
 **Tags**: #domain #conversation #crud

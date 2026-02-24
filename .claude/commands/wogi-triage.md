@@ -89,7 +89,28 @@ What would you like to do with this finding?
 
 ## Fix Execution
 
-After the triage loop completes, execute "Fix now" items sequentially:
+After the triage loop completes, execute "Fix now" items sequentially.
+
+**If the fix queue is empty** (no findings marked "Fix now"), skip task creation entirely and proceed directly to the Triage Summary.
+
+**MANDATORY: Create a tracked task before applying any fixes.** This ensures the PreToolUse task-gate allows Edit/Write operations:
+
+1. Generate task ID: Call `generateTaskId('Fix N triage findings')` from `scripts/flow-utils.js` to produce a valid `wf-XXXXXXXX` ID.
+2. Add to `ready.json` inProgress:
+   ```json
+   {
+     "id": "[from generateTaskId()]",
+     "title": "Fix N triage findings",
+     "type": "fix",
+     "feature": "triage",
+     "status": "in_progress",
+     "priority": "P1",
+     "createdAt": "[ISO timestamp]",
+     "startedAt": "[ISO timestamp]"
+   }
+   ```
+3. Only after the task exists in inProgress, proceed with fixes below.
+4. After all fixes complete, move the task to recentlyCompleted.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -18,9 +18,17 @@ API endpoints and client functions. **Check before creating new endpoints.**
 
 ## Endpoints
 
-| Method | Endpoint | Service | File |
-|--------|----------|---------|------|
-<!-- Endpoints will be registered as they're created -->
+| Method | Endpoint | Controller | Service | File |
+|--------|----------|------------|---------|------|
+| GET | / | AppController | AppService | src/app.controller.ts |
+| POST | /api/conversation | CreateConversationController | ConversationService | src/conversation/controllers/create-conversation.controller.ts |
+| GET | /api/conversation | ListConversationController | ConversationService | src/conversation/controllers/list-conversation.controller.ts |
+| GET | /api/conversation/:id | GetConversationController | ConversationService | src/conversation/controllers/get-conversation.controller.ts |
+| PATCH | /api/conversation/:id | UpdateConversationController | ConversationService | src/conversation/controllers/update-conversation.controller.ts |
+| DELETE | /api/conversation/:id | DeleteConversationController | ConversationService | src/conversation/controllers/delete-conversation.controller.ts |
+
+**Auth:** All `/api/conversation` endpoints require `authorization` header.
+**Response format:** `{ data: ... }` envelope. DELETE also includes `message`.
 
 ## Client Functions
 

@@ -19,7 +19,7 @@ Utility functions available for reuse. **Check before creating new utilities.**
 
 | Function | Purpose | File | Parameters |
 |----------|---------|------|------------|
-<!-- Functions will be registered as they're created -->
+| LocalApiProperty | Conditionally show API field in Swagger (LOCAL mode only) | src/common/decorators/local-api-property.decorator.ts | (options: ApiPropertyOptions) |
 
 ## Rules
 

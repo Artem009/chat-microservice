@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-23T18:35:00.000Z",
+  "lastUpdated": "2026-02-24T16:10:00.240Z",
   "ready": [
     {
       "id": "wf-message-module",
@@ -7,7 +7,11 @@
       "type": "feature",
       "priority": "P1",
       "feature": "ft-data-layer",
-      "tags": ["#domain", "#message", "#crud"]
+      "tags": [
+        "#domain",
+        "#message",
+        "#crud"
+      ]
     },
     {
       "id": "wf-participant-module",
@@ -15,19 +19,40 @@
       "type": "feature",
       "priority": "P1",
       "feature": "ft-data-layer",
-      "tags": ["#domain", "#participant", "#crud"]
+      "tags": [
+        "#domain",
+        "#participant",
+        "#crud"
+      ]
     }
   ],
   "inProgress": [],
   "blocked": [],
   "recentlyCompleted": [
     {
+      "id": "wf-fc80a97c",
+      "title": "Add Swagger example data with UUID examples to DTOs",
+      "type": "feature",
+      "priority": "P3",
+      "tags": [
+        "#swagger",
+        "#dto",
+        "#documentation"
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-24T16:10:00.240Z"
+    },
+    {
       "id": "wf-conversation-module",
       "title": "Create Conversation module with CRUD",
       "type": "feature",
       "priority": "P1",
       "feature": "ft-data-layer",
-      "tags": ["#domain", "#conversation", "#crud"],
+      "tags": [
+        "#domain",
+        "#conversation",
+        "#crud"
+      ],
       "status": "completed",
       "completedAt": "2026-02-23T18:35:00.000Z"
     },
@@ -37,7 +62,11 @@
       "type": "feature",
       "priority": "P1",
       "feature": "ft-data-layer",
-      "tags": ["#domain", "#prisma", "#database"],
+      "tags": [
+        "#domain",
+        "#prisma",
+        "#database"
+      ],
       "status": "completed",
       "completedAt": "2026-02-23T18:20:00.000Z"
     },
@@ -47,7 +76,10 @@
       "type": "refactor",
       "priority": "P3",
       "feature": "ft-27ad4502",
-      "tags": ["#infrastructure", "#config"],
+      "tags": [
+        "#infrastructure",
+        "#config"
+      ],
       "status": "completed",
       "completedAt": "2026-02-23T17:11:53.117Z"
     },
@@ -57,7 +89,10 @@
       "type": "refactor",
       "priority": "P3",
       "feature": "ft-27ad4502",
-      "tags": ["#infrastructure", "#tooling"],
+      "tags": [
+        "#infrastructure",
+        "#tooling"
+      ],
       "status": "completed",
       "completedAt": "2026-02-23T17:12:00.000Z"
     }
@@ -69,8 +104,14 @@
       "type": "feature",
       "priority": "P2",
       "feature": "ft-realtime",
-      "tags": ["#domain", "#websocket", "#realtime"],
-      "blockedBy": ["wf-message-module"]
+      "tags": [
+        "#domain",
+        "#websocket",
+        "#realtime"
+      ],
+      "blockedBy": [
+        "wf-message-module"
+      ]
     },
     {
       "id": "wf-read-receipts",
@@ -78,8 +119,13 @@
       "type": "feature",
       "priority": "P2",
       "feature": "ft-advanced",
-      "tags": ["#domain", "#read-receipts"],
-      "blockedBy": ["wf-websocket-gateway"]
+      "tags": [
+        "#domain",
+        "#read-receipts"
+      ],
+      "blockedBy": [
+        "wf-websocket-gateway"
+      ]
     },
     {
       "id": "wf-typing-presence",
@@ -87,8 +133,14 @@
       "type": "feature",
       "priority": "P2",
       "feature": "ft-advanced",
-      "tags": ["#domain", "#typing", "#presence"],
-      "blockedBy": ["wf-websocket-gateway"]
+      "tags": [
+        "#domain",
+        "#typing",
+        "#presence"
+      ],
+      "blockedBy": [
+        "wf-websocket-gateway"
+      ]
     }
   ]
 }
