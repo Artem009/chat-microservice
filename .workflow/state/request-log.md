@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-015 | 2026-02-24
+**Type**: feature
+**Tags**: #domain #message #crud
+**Request**: "Create Message module with CRUD (wf-message-module)"
+**Result**: Created full message module following conversation module patterns: MessageService with 5 CRUD methods (create, findAll with pagination, findOne with conversation include, update, remove via soft delete). 5 action controllers (create, list, get, update, delete) extending BaseController. POST connects message to conversation via Prisma relation. GET list filters by conversationId query param with take/skip pagination. GET single includes conversation relation, throws NotFoundException if not found/soft-deleted. PATCH updates content. DELETE uses soft delete (deletedAt). DTOs with class-validator + @ApiProperty with UUID examples. All endpoints follow { data } response envelope. 15 unit tests covering service + all controllers including NotFoundException cases. Wired into AppModule.
+**Files**: src/message/message.module.ts, src/message/message.service.ts, src/message/controllers/base.controller.ts, src/message/controllers/create-message.controller.ts, src/message/controllers/list-message.controller.ts, src/message/controllers/get-message.controller.ts, src/message/controllers/update-message.controller.ts, src/message/controllers/delete-message.controller.ts, src/message/dto/create-message.dto.ts, src/message/dto/update-message.dto.ts, src/message/message.spec.ts, src/app.module.ts
+
+---
+
 ### R-014 | 2026-02-24
 **Type**: change
 **Tags**: #swagger #dto #documentation

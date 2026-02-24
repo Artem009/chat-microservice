@@ -1,18 +1,6 @@
 {
-  "lastUpdated": "2026-02-24T16:10:00.240Z",
+  "lastUpdated": "2026-02-24T16:33:36.872Z",
   "ready": [
-    {
-      "id": "wf-message-module",
-      "title": "Create Message module with CRUD",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-data-layer",
-      "tags": [
-        "#domain",
-        "#message",
-        "#crud"
-      ]
-    },
     {
       "id": "wf-participant-module",
       "title": "Create Participant module with management endpoints",
@@ -29,6 +17,20 @@
   "inProgress": [],
   "blocked": [],
   "recentlyCompleted": [
+    {
+      "id": "wf-message-module",
+      "title": "Create Message module with CRUD",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-data-layer",
+      "tags": [
+        "#domain",
+        "#message",
+        "#crud"
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-24T16:33:36.872Z"
+    },
     {
       "id": "wf-fc80a97c",
       "title": "Add Swagger example data with UUID examples to DTOs",
@@ -108,9 +110,6 @@
         "#domain",
         "#websocket",
         "#realtime"
-      ],
-      "blockedBy": [
-        "wf-message-module"
       ]
     },
     {

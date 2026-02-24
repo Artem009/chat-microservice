@@ -26,8 +26,13 @@ API endpoints and client functions. **Check before creating new endpoints.**
 | GET | /api/conversation/:id | GetConversationController | ConversationService | src/conversation/controllers/get-conversation.controller.ts |
 | PATCH | /api/conversation/:id | UpdateConversationController | ConversationService | src/conversation/controllers/update-conversation.controller.ts |
 | DELETE | /api/conversation/:id | DeleteConversationController | ConversationService | src/conversation/controllers/delete-conversation.controller.ts |
+| POST | /api/message | CreateMessageController | MessageService | src/message/controllers/create-message.controller.ts |
+| GET | /api/message?conversationId&take&skip | ListMessageController | MessageService | src/message/controllers/list-message.controller.ts |
+| GET | /api/message/:id | GetMessageController | MessageService | src/message/controllers/get-message.controller.ts |
+| PATCH | /api/message/:id | UpdateMessageController | MessageService | src/message/controllers/update-message.controller.ts |
+| DELETE | /api/message/:id | DeleteMessageController | MessageService | src/message/controllers/delete-message.controller.ts |
 
-**Auth:** All `/api/conversation` endpoints require `authorization` header.
+**Auth:** All `/api/conversation` and `/api/message` endpoints require `authorization` header.
 **Response format:** `{ data: ... }` envelope. DELETE also includes `message`.
 
 ## Client Functions
