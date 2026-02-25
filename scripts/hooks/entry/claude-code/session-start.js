@@ -81,12 +81,59 @@ async function main() {
       }
     }
 
+    // Validate script alignment (drift detection)
+    let scriptWarnings = [];
+    try {
+      const { validateScripts } = require('../../../flow-script-resolver');
+      scriptWarnings = validateScripts();
+    } catch (err) {
+      if (process.env.DEBUG) {
+        console.error(`[session-start] Script validation failed: ${err.message}`);
+      }
+    }
+
     // Gather session context
     const coreResult = await gatherSessionContext({
       includeSuspended: true,
       includeDecisions: true,
       includeActivity: true
     });
+
+    // Community knowledge pull + suggestion retry (non-blocking)
+    try {
+      const { getConfig } = require('../../../flow-utils');
+      const config = getConfig();
+      if (config.community?.enabled) {
+        const community = require('../../../flow-community');
+
+        // Retry pending suggestions (fire-and-forget)
+        community.retryPendingSuggestions(config).catch(() => {});
+
+        // Pull community knowledge (fire-and-forget, updates cache)
+        const knowledge = await community.pullFromServer(config);
+        if (knowledge && coreResult && coreResult.context) {
+          coreResult.context.communityKnowledge = knowledge;
+
+          // Merge community knowledge into local state files (Phase C2)
+          try {
+            community.mergeCommunityKnowledge(knowledge, config);
+          } catch (mergeErr) {
+            if (process.env.DEBUG) {
+              console.error(`[session-start] Community merge failed: ${mergeErr.message}`);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      if (process.env.DEBUG) {
+        console.error(`[session-start] Community pull failed: ${err.message}`);
+      }
+    }
+
+    // Inject script warnings into context (if any)
+    if (scriptWarnings.length > 0 && coreResult && coreResult.context) {
+      coreResult.context.scriptWarnings = scriptWarnings.map(w => w.message);
+    }
 
     // Transform to Claude Code format
     const output = claudeCodeAdapter.transformResult('SessionStart', coreResult);

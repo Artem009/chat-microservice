@@ -1,12 +1,12 @@
 {
-  "lastActive": "2026-02-24T16:58:08.530Z",
-  "cliSessionId": "1d49ee1d-8f18-44ec-8482-7adbb7bc3860",
+  "lastActive": "2026-02-25T14:00:27.990Z",
+  "cliSessionId": "6056356d-7262-4ac3-a002-8975b5e6187f",
   "currentTask": null,
   "recentFiles": [],
   "recentDecisions": [],
   "contextSnapshot": {
     "keyFacts": [],
-    "inProgress": null,
+    "inProgress": "wf-websocket-gateway",
     "blockers": []
   },
   "metrics": {
@@ -17,7 +17,7 @@
   },
   "lastSessionSummary": null,
   "bypassTracking": {
-    "count": 11,
+    "count": 21,
     "attempts": [
       {
         "timestamp": "2026-02-23T15:06:51.264Z",
@@ -91,6 +91,76 @@
       },
       {
         "timestamp": "2026-02-24T16:58:08.529Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/roadmap.md",
+        "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:05:32.909Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/config.json",
+        "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:18:27.587Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/chat-gateway/dto/join-room.dto.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:18:39.148Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/chat-gateway/chat.gateway.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:18:39.852Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/chat-gateway/chat-gateway.module.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:19:00.514Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/chat-gateway/dto/join-room.dto.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:19:12.248Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/chat-gateway/chat.gateway.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:19:12.369Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/chat-gateway/chat-gateway.module.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:21:07.111Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/message/message.module.ts",
+        "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:23:58.388Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/chat-gateway/chat-gateway.spec.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-25T11:29:00.184Z",
         "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/roadmap.md",
         "operation": "edit",
         "reason": "no_task_auto_create_disabled",
