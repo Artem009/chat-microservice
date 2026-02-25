@@ -2,14 +2,15 @@ import { Controller, Delete, Param } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { BaseController } from './base.controller';
 import { MessageService } from '../message.service';
+import { ChatGateway } from '../../chat-gateway/chat.gateway';
 import { NotFoundException } from '../../exeption';
 
 @ApiTags('message')
 @ApiSecurity('authorization')
 @Controller('api/message')
 export class DeleteMessageController extends BaseController {
-  constructor(messageService: MessageService) {
-    super(messageService);
+  constructor(messageService: MessageService, chatGateway: ChatGateway) {
+    super(messageService, chatGateway);
   }
 
   @Delete(':id')

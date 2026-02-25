@@ -2,6 +2,7 @@ import { Body, Controller, Param, Patch } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { BaseController } from './base.controller';
 import { MessageService } from '../message.service';
+import { ChatGateway } from '../../chat-gateway/chat.gateway';
 import { UpdateMessageDto } from '../dto/update-message.dto';
 import { NotFoundException } from '../../exeption';
 
@@ -9,8 +10,8 @@ import { NotFoundException } from '../../exeption';
 @ApiSecurity('authorization')
 @Controller('api/message')
 export class UpdateMessageController extends BaseController {
-  constructor(messageService: MessageService) {
-    super(messageService);
+  constructor(messageService: MessageService, chatGateway: ChatGateway) {
+    super(messageService, chatGateway);
   }
 
   @Patch(':id')

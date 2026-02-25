@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-017 | 2026-02-25
+**Type**: feature
+**Tags**: #domain #websocket #realtime
+**Request**: "Create WebSocket gateway for real-time messaging (wf-websocket-gateway)"
+**Result**: Installed @nestjs/websockets and @nestjs/platform-ws (pure WS adapter, Fastify-compatible). Configured WsAdapter in main.ts. Created ChatGatewayModule with ChatGateway implementing OnGatewayConnection/OnGatewayDisconnect. Manual room management via Map/Set: joinConversation adds client to room, leaveConversation removes, handleDisconnect cleans up all rooms. broadcastToRoom sends JSON messages to all clients in a conversation. REST→WS bridge: CreateMessageController injects ChatGateway and calls broadcastToRoom after message creation. Updated all 5 message controllers to pass ChatGateway via BaseController. JoinRoomDto with class-validator. 14 gateway tests + 1 broadcast integration test. All 78 tests pass. TypeScript clean.
+**Files**: src/chat-gateway/chat-gateway.module.ts, src/chat-gateway/chat.gateway.ts, src/chat-gateway/dto/join-room.dto.ts, src/chat-gateway/chat-gateway.spec.ts, src/message/message.module.ts, src/message/controllers/base.controller.ts, src/message/controllers/create-message.controller.ts, src/message/controllers/list-message.controller.ts, src/message/controllers/get-message.controller.ts, src/message/controllers/update-message.controller.ts, src/message/controllers/delete-message.controller.ts, src/message/message.spec.ts, src/app.module.ts, src/main.ts, package.json
+
+---
+
 ### R-016 | 2026-02-24
 **Type**: feature
 **Tags**: #domain #participant #crud

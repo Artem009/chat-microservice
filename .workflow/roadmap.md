@@ -12,18 +12,7 @@ _No active tasks. All data-layer modules complete._
 ## Next (Ready to Plan)
 <!-- PIN: next -->
 
-### Create WebSocket gateway for real-time messaging
-- **Task:** wf-websocket-gateway
-- **Priority:** P2
-- **Feature:** ft-realtime
-- **Tags:** #domain #websocket #realtime
-- **Depends On:** wf-message-module (completed)
-- **Assumes:**
-  - Message module provides CRUD operations for WebSocket to emit events
-  - NestJS @WebSocketGateway decorator with Fastify adapter compatibility
-- **Key Files:**
-  - src/message/ — Message service for persistence
-  - src/app.module.ts — Will need to import WebSocket module
+_No tasks in Next. Read receipts and typing indicators are ready to plan._
 
 ---
 
@@ -61,6 +50,12 @@ _No items yet._
 
 ## Completed
 <!-- PIN: completed -->
+
+### Create WebSocket gateway for real-time messaging
+- **Task:** wf-websocket-gateway
+- **Completed:** 2026-02-25
+- **Type:** feature
+- **Result:** ChatGateway with WsAdapter (Fastify-compatible), manual room management, REST→WS bridge via CreateMessageController, 14 gateway tests + 1 broadcast test
 
 ### Install SWC compiler for faster builds
 - **Task:** wf-bc6bf0fb
@@ -102,12 +97,12 @@ _No items yet._
 
 ```
 [completed] prisma-models
-    ├──→ [completed] message-module ──→ [ready] websocket-gateway ──→ [blocked] read-receipts
-    │                                                             ──→ [blocked] typing-presence
+    ├──→ [completed] message-module ──→ [completed] websocket-gateway ──→ [unblocked] read-receipts
+    │                                                                 ──→ [unblocked] typing-presence
     └──→ [completed] participant-module
 
 [completed] conversation-module (independent, already done)
 ```
 
 ---
-Last updated: 2026-02-24
+Last updated: 2026-02-25

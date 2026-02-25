@@ -2,6 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MessageService } from './message.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ChatGateway } from '../chat-gateway/chat.gateway';
 import { CreateMessageController } from './controllers/create-message.controller';
 import { ListMessageController } from './controllers/list-message.controller';
 import { GetMessageController } from './controllers/get-message.controller';
@@ -36,6 +37,10 @@ const mockPrismaService = {
   },
 };
 
+const mockChatGateway = {
+  broadcastToRoom: jest.fn(),
+};
+
 describe('MessageModule', () => {
   let service: MessageService;
   let createController: CreateMessageController;
@@ -49,6 +54,7 @@ describe('MessageModule', () => {
       providers: [
         MessageService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: ChatGateway, useValue: mockChatGateway },
       ],
       controllers: [
         CreateMessageController,
@@ -140,6 +146,19 @@ describe('MessageModule', () => {
             conversation: { connect: { id: 'conv-1' } },
           }),
         }),
+      );
+    });
+
+    it('should broadcast message via WebSocket after creation', async () => {
+      await createController.create({
+        content: 'Hello world',
+        conversationId: 'conv-1',
+        senderId: 'user-1',
+      });
+      expect(mockChatGateway.broadcastToRoom).toHaveBeenCalledWith(
+        'conv-1',
+        'newMessage',
+        mockMessage,
       );
     });
   });

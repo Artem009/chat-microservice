@@ -2,13 +2,14 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { BaseController } from './base.controller';
 import { MessageService } from '../message.service';
+import { ChatGateway } from '../../chat-gateway/chat.gateway';
 
 @ApiTags('message')
 @ApiSecurity('authorization')
 @Controller('api/message')
 export class ListMessageController extends BaseController {
-  constructor(messageService: MessageService) {
-    super(messageService);
+  constructor(messageService: MessageService, chatGateway: ChatGateway) {
+    super(messageService, chatGateway);
   }
 
   @Get()

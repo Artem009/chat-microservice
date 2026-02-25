@@ -1,9 +1,23 @@
 {
-  "lastUpdated": "2026-02-24T17:08:33.594Z",
+  "lastUpdated": "2026-02-25T11:26:34.784Z",
   "ready": [],
   "inProgress": [],
   "blocked": [],
   "recentlyCompleted": [
+    {
+      "id": "wf-websocket-gateway",
+      "title": "Create WebSocket gateway for real-time messaging",
+      "type": "feature",
+      "priority": "P2",
+      "feature": "ft-realtime",
+      "tags": [
+        "#domain",
+        "#websocket",
+        "#realtime"
+      ],
+      "status": "completed",
+      "completedAt": "2026-02-25T11:26:34.783Z"
+    },
     {
       "id": "wf-participant-module",
       "title": "Create Participant module with management endpoints",
@@ -102,18 +116,6 @@
   ],
   "backlog": [
     {
-      "id": "wf-websocket-gateway",
-      "title": "Create WebSocket gateway for real-time messaging",
-      "type": "feature",
-      "priority": "P2",
-      "feature": "ft-realtime",
-      "tags": [
-        "#domain",
-        "#websocket",
-        "#realtime"
-      ]
-    },
-    {
       "id": "wf-read-receipts",
       "title": "Add read receipts tracking",
       "type": "feature",
@@ -122,9 +124,6 @@
       "tags": [
         "#domain",
         "#read-receipts"
-      ],
-      "blockedBy": [
-        "wf-websocket-gateway"
       ]
     },
     {
@@ -137,9 +136,6 @@
         "#domain",
         "#typing",
         "#presence"
-      ],
-      "blockedBy": [
-        "wf-websocket-gateway"
       ]
     }
   ]

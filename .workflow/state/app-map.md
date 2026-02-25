@@ -17,6 +17,7 @@ Architecture follows reference patterns from comment-microservice.
 | ConversationModule | Conversation CRUD, imports PrismaModule | src/conversation/conversation.module.ts | Active |
 | MessageModule | Message CRUD scoped to conversations, imports PrismaModule | src/message/message.module.ts | Active |
 | ParticipantModule | Participant management (add/remove/role), imports PrismaModule | src/participant/participant.module.ts | Active |
+| ChatGatewayModule | WebSocket gateway for real-time messaging, exports ChatGateway | src/chat-gateway/chat-gateway.module.ts | Active |
 
 ## Controllers
 <!-- PIN: controllers -->
@@ -52,6 +53,13 @@ Architecture follows reference patterns from comment-microservice.
 | MessageService | MessageModule | src/message/message.service.ts | Active |
 | ParticipantService | ParticipantModule | src/participant/participant.service.ts | Active |
 
+## Gateways
+<!-- PIN: gateways -->
+
+| Gateway | Events | Module | File |
+|---------|--------|--------|------|
+| ChatGateway | joinConversation, leaveConversation, newMessage (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
+
 ## DTOs
 <!-- PIN: dto -->
 
@@ -63,6 +71,7 @@ Architecture follows reference patterns from comment-microservice.
 | UpdateMessageDto | MessageModule | src/message/dto/update-message.dto.ts | content? |
 | AddParticipantDto | ParticipantModule | src/participant/dto/add-participant.dto.ts | conversationId, userId, role? |
 | UpdateParticipantDto | ParticipantModule | src/participant/dto/update-participant.dto.ts | role |
+| JoinRoomDto | ChatGatewayModule | src/chat-gateway/dto/join-room.dto.ts | conversationId |
 
 ## Common
 <!-- PIN: common -->

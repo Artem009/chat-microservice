@@ -6,16 +6,30 @@
 - **Onboarded**: 2026-02-23
 - **Reference**: comment-microservice (22 patterns imported)
 
-## Infrastructure Gaps (from onboarding)
-- [ ] Switch Express to Fastify (wf-00000001)
-- [ ] Set up Prisma + PostgreSQL (wf-00000002)
-- [ ] Add Swagger docs (wf-00000003)
-- [ ] Add global ValidationPipe (wf-00000004)
-- [ ] Add docker-compose (wf-00000005)
-- [ ] Create custom exceptions (wf-00000006)
-- [ ] Create LocalApiProperty decorator (wf-00000007)
-- [ ] Install SWC compiler (wf-00000008)
-- [ ] Align tsconfig module system (wf-00000009)
+## Infrastructure Gaps (from onboarding) — ALL COMPLETE
+- [x] Switch Express to Fastify (R-003)
+- [x] Set up Prisma + PostgreSQL (R-008)
+- [x] Add Swagger docs (R-004)
+- [x] Add global ValidationPipe (R-005)
+- [x] Add docker-compose (R-007)
+- [x] Create custom exceptions (R-006)
+- [x] Create LocalApiProperty decorator (R-009)
+- [x] Install SWC compiler (R-010)
+- [x] Align tsconfig module system (R-011)
+
+## Domain Modules — ALL COMPLETE
+- [x] Create Prisma models for chat domain (R-012)
+- [x] Create Conversation module with CRUD (R-013)
+- [x] Add Swagger examples to DTOs (R-014)
+- [x] Create Message module with CRUD (R-015)
+- [x] Create Participant module with management endpoints (R-016)
+
+## Real-time — IN PROGRESS
+- [x] WebSocket gateway for real-time messaging (R-017)
+
+## Backlog — UNBLOCKED
+- [ ] Read receipts tracking (wf-read-receipts)
+- [ ] Typing indicators and online presence (wf-typing-presence)
 
 ## Session Notes
 <!-- Updated by /wogi-session-end -->

@@ -5,9 +5,16 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
 import { ParticipantModule } from './participant/participant.module';
+import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
 
 @Module({
-  imports: [PrismaModule, ConversationModule, MessageModule, ParticipantModule],
+  imports: [
+    PrismaModule,
+    ConversationModule,
+    MessageModule,
+    ParticipantModule,
+    ChatGatewayModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
