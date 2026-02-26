@@ -32,6 +32,7 @@
 ## Engagement Features
 - [x] Emoji reactions on messages (R-020)
 - [x] @mentions in messages (R-021)
+- [x] Reply threads on messages (R-022)
 
 ## Session Notes
 <!-- Updated by /wogi-session-end -->

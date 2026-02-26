@@ -10,6 +10,7 @@ import { GetMessageController } from './controllers/get-message.controller';
 import { UpdateMessageController } from './controllers/update-message.controller';
 import { DeleteMessageController } from './controllers/delete-message.controller';
 import { MarkReadController } from './controllers/mark-read.controller';
+import { ListThreadController } from './controllers/list-thread.controller';
 import { MentionService } from '../mention/mention.service';
 import { NotFoundException } from '../exeption';
 
@@ -88,6 +89,7 @@ describe('MessageModule', () => {
   let updateController: UpdateMessageController;
   let deleteController: DeleteMessageController;
   let markReadController: MarkReadController;
+  let listThreadController: ListThreadController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -101,6 +103,7 @@ describe('MessageModule', () => {
       controllers: [
         CreateMessageController,
         ListMessageController,
+        ListThreadController,
         GetMessageController,
         UpdateMessageController,
         DeleteMessageController,
@@ -121,6 +124,8 @@ describe('MessageModule', () => {
       DeleteMessageController,
     );
     markReadController = module.get<MarkReadController>(MarkReadController);
+    listThreadController =
+      module.get<ListThreadController>(ListThreadController);
   });
 
   afterEach(() => {
@@ -309,7 +314,9 @@ describe('MessageModule', () => {
   describe('GetMessageController', () => {
     it('should get a message by id', async () => {
       const result = await getController.get('msg-1');
-      expect(result).toEqual({ data: mockMessage });
+      expect(result).toEqual({
+        data: { ...mockMessage, replyCount: 0 },
+      });
     });
 
     it('should throw NotFoundException when message not found', async () => {
@@ -485,6 +492,221 @@ describe('MessageModule', () => {
         'deleted-msg',
       );
       expect(result).toBe(10);
+    });
+  });
+
+  describe('Thread Replies', () => {
+    const mockParentMessage = {
+      ...mockMessage,
+      id: 'parent-msg-1',
+      parentMessageId: null,
+      _count: { replies: 0 },
+    };
+
+    const mockReply = {
+      ...mockMessage,
+      id: 'reply-1',
+      parentMessageId: 'parent-msg-1',
+    };
+
+    describe('CreateMessageController (thread)', () => {
+      it('should create a reply with valid parentMessageId', async () => {
+        mockPrismaService.message.findUnique.mockResolvedValueOnce(
+          mockParentMessage,
+        );
+        mockPrismaService.message.create.mockResolvedValueOnce(mockReply);
+
+        const result = await createController.create({
+          content: 'Thread reply',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          parentMessageId: 'parent-msg-1',
+        });
+
+        expect(result.data).toEqual(mockReply);
+        expect(mockPrismaService.message.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              parentMessage: { connect: { id: 'parent-msg-1' } },
+            }),
+          }),
+        );
+      });
+
+      it('should broadcast threadReply event for replies', async () => {
+        mockPrismaService.message.findUnique.mockResolvedValueOnce(
+          mockParentMessage,
+        );
+        mockPrismaService.message.create.mockResolvedValueOnce(mockReply);
+
+        await createController.create({
+          content: 'Thread reply',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          parentMessageId: 'parent-msg-1',
+        });
+
+        expect(mockChatGateway.broadcastToRoom).toHaveBeenCalledWith(
+          'conv-1',
+          'threadReply',
+          { parentMessageId: 'parent-msg-1', reply: mockReply },
+        );
+      });
+
+      it('should throw NotFoundException for non-existent parent', async () => {
+        mockPrismaService.message.findUnique.mockResolvedValueOnce(null);
+
+        await expect(
+          createController.create({
+            content: 'Reply',
+            conversationId: 'conv-1',
+            senderId: 'user-1',
+            parentMessageId: 'nonexistent',
+          }),
+        ).rejects.toThrow(NotFoundException);
+      });
+
+      it('should throw NotFoundException when parent is in a different conversation', async () => {
+        mockPrismaService.message.findUnique.mockResolvedValueOnce({
+          ...mockParentMessage,
+          conversationId: 'other-conv',
+        });
+
+        await expect(
+          createController.create({
+            content: 'Reply',
+            conversationId: 'conv-1',
+            senderId: 'user-1',
+            parentMessageId: 'parent-msg-1',
+          }),
+        ).rejects.toThrow(NotFoundException);
+      });
+
+      it('should flatten nested replies to original parent', async () => {
+        const nestedReply = {
+          ...mockParentMessage,
+          id: 'reply-1',
+          parentMessageId: 'original-parent',
+          conversationId: 'conv-1',
+        };
+        mockPrismaService.message.findUnique.mockResolvedValueOnce(
+          nestedReply,
+        );
+        mockPrismaService.message.create.mockResolvedValueOnce({
+          ...mockReply,
+          parentMessageId: 'original-parent',
+        });
+
+        await createController.create({
+          content: 'Nested reply',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+          parentMessageId: 'reply-1',
+        });
+
+        expect(mockPrismaService.message.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              parentMessage: { connect: { id: 'original-parent' } },
+            }),
+          }),
+        );
+      });
+
+      it('should not broadcast threadReply for non-threaded messages', async () => {
+        mockPrismaService.message.create.mockResolvedValueOnce(mockMessage);
+
+        await createController.create({
+          content: 'Regular message',
+          conversationId: 'conv-1',
+          senderId: 'user-1',
+        });
+
+        expect(mockChatGateway.broadcastToRoom).not.toHaveBeenCalledWith(
+          expect.anything(),
+          'threadReply',
+          expect.anything(),
+        );
+      });
+    });
+
+    describe('GetMessageController (reply count)', () => {
+      it('should include replyCount in message response', async () => {
+        mockPrismaService.message.findUnique.mockResolvedValueOnce({
+          ...mockMessage,
+          _count: { replies: 5 },
+        });
+
+        const result = await getController.get('msg-1');
+        expect(result.data.replyCount).toBe(5);
+      });
+
+      it('should return replyCount 0 when no replies', async () => {
+        mockPrismaService.message.findUnique.mockResolvedValueOnce({
+          ...mockMessage,
+          _count: { replies: 0 },
+        });
+
+        const result = await getController.get('msg-1');
+        expect(result.data.replyCount).toBe(0);
+      });
+    });
+
+    describe('ListThreadController', () => {
+      it('should list replies for a parent message', async () => {
+        const replies = [mockReply, { ...mockReply, id: 'reply-2' }];
+        mockPrismaService.message.findMany.mockResolvedValueOnce(replies);
+
+        const result =
+          await listThreadController.listThread('parent-msg-1');
+
+        expect(result).toEqual({ data: replies });
+        expect(mockPrismaService.message.findMany).toHaveBeenCalledWith({
+          where: { parentMessageId: 'parent-msg-1', deletedAt: null },
+          orderBy: { createdAt: 'asc' },
+        });
+      });
+
+      it('should return empty array when no replies exist', async () => {
+        mockPrismaService.message.findMany.mockResolvedValueOnce([]);
+
+        const result =
+          await listThreadController.listThread('parent-msg-1');
+
+        expect(result).toEqual({ data: [] });
+      });
+    });
+
+    describe('MessageService (thread methods)', () => {
+      it('should find replies by parentMessageId', async () => {
+        mockPrismaService.message.findMany.mockResolvedValueOnce([mockReply]);
+
+        const result = await service.findReplies('parent-msg-1');
+
+        expect(result).toEqual([mockReply]);
+        expect(mockPrismaService.message.findMany).toHaveBeenCalledWith({
+          where: { parentMessageId: 'parent-msg-1', deletedAt: null },
+          orderBy: { createdAt: 'asc' },
+        });
+      });
+
+      it('should include _count.replies in findOne', async () => {
+        mockPrismaService.message.findUnique.mockResolvedValueOnce({
+          ...mockMessage,
+          _count: { replies: 3 },
+        });
+
+        const result = await service.findOne('msg-1');
+
+        expect(mockPrismaService.message.findUnique).toHaveBeenCalledWith(
+          expect.objectContaining({
+            include: expect.objectContaining({
+              _count: { select: { replies: true } },
+            }),
+          }),
+        );
+        expect(result?._count?.replies).toBe(3);
+      });
     });
   });
 });

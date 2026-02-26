@@ -1,7 +1,9 @@
 {
   "lastUpdated": "2026-02-26T15:40:22.497Z",
   "ready": [],
-  "inProgress": [
+  "inProgress": [],
+  "blocked": [],
+  "recentlyCompleted": [
     {
       "id": "wf-b4f22cbe",
       "title": "Add reply threads on messages",
@@ -13,14 +15,12 @@
         "#threads",
         "#messages"
       ],
-      "status": "in_progress",
+      "status": "completed",
       "promotedFrom": "roadmap",
       "promotedAt": "2026-02-26T15:45:00.000Z",
-      "startedAt": "2026-02-26T16:00:00.000Z"
-    }
-  ],
-  "blocked": [],
-  "recentlyCompleted": [
+      "startedAt": "2026-02-26T16:00:00.000Z",
+      "completedAt": "2026-02-26T16:10:00.000Z"
+    },
     {
       "id": "wf-7ed59642",
       "title": "Add @mentions in messages",

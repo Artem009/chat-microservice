@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateMessageDto {
   @ApiProperty({
@@ -25,4 +25,12 @@ export class CreateMessageDto {
   @IsNotEmpty()
   @IsString()
   senderId!: string;
+
+  @ApiPropertyOptional({
+    description: 'Parent message ID for thread replies',
+    example: '550e8400-e29b-41d4-a716-446655440099',
+  })
+  @IsOptional()
+  @IsString()
+  parentMessageId?: string;
 }

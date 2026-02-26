@@ -7,6 +7,7 @@ import { MentionService } from '../../mention/mention.service';
 import { ParticipantService } from '../../participant/participant.service';
 import { CreateMessageDto } from '../dto/create-message.dto';
 import { parseMentions } from '../../mention/mention-parser';
+import { NotFoundException } from '../../exeption';
 
 @ApiTags('message')
 @ApiSecurity('authorization')
@@ -23,15 +24,43 @@ export class CreateMessageController extends BaseController {
 
   @Post()
   async create(@Body() dto: CreateMessageDto) {
+    let resolvedParentId = dto.parentMessageId;
+
+    if (resolvedParentId) {
+      const parent = await this.messageService.findOne(resolvedParentId);
+      if (!parent || parent.deletedAt) {
+        throw new NotFoundException('Parent message not found');
+      }
+      if (parent.conversationId !== dto.conversationId) {
+        throw new NotFoundException(
+          'Parent message does not belong to this conversation',
+        );
+      }
+      // Flatten: if parent is itself a reply, point to the original parent
+      if (parent.parentMessageId) {
+        resolvedParentId = parent.parentMessageId;
+      }
+    }
+
     const message = await this.messageService.create({
       content: dto.content,
       senderId: dto.senderId,
       conversation: {
         connect: { id: dto.conversationId },
       },
+      ...(resolvedParentId && {
+        parentMessage: { connect: { id: resolvedParentId } },
+      }),
     });
 
     this.chatGateway.broadcastToRoom(dto.conversationId, 'newMessage', message);
+
+    if (resolvedParentId) {
+      this.chatGateway.broadcastToRoom(dto.conversationId, 'threadReply', {
+        parentMessageId: resolvedParentId,
+        reply: message,
+      });
+    }
 
     const parsedUserIds = parseMentions(dto.content);
     let mentions: {

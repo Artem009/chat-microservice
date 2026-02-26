@@ -27,7 +27,15 @@ export class MessageService {
       where: { id },
       include: {
         conversation: true,
+        _count: { select: { replies: true } },
       },
+    });
+  }
+
+  findReplies(parentMessageId: string) {
+    return this.prisma.message.findMany({
+      where: { parentMessageId, deletedAt: null },
+      orderBy: { createdAt: 'asc' },
     });
   }
 

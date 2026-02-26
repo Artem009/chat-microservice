@@ -45,6 +45,7 @@ Architecture follows reference patterns from comment-microservice.
 | CreateReactionController | /api/reaction | POST | ReactionModule | src/reaction/controllers/create-reaction.controller.ts |
 | ListReactionController | /api/reaction | GET | ReactionModule | src/reaction/controllers/list-reaction.controller.ts |
 | DeleteReactionController | /api/reaction/:id | DELETE | ReactionModule | src/reaction/controllers/delete-reaction.controller.ts |
+| ListThreadController | /api/message/thread/:parentMessageId | GET | MessageModule | src/message/controllers/list-thread.controller.ts |
 | ListMentionController | /api/mention | GET | MentionModule | src/mention/controllers/list-mention.controller.ts |
 
 **Base classes:** `BaseController` — per-module base for feature controllers (`src/conversation/controllers/base.controller.ts`, `src/message/controllers/base.controller.ts`, `src/participant/controllers/base.controller.ts`, `src/reaction/controllers/base.controller.ts`, `src/mention/controllers/base.controller.ts`)
@@ -67,7 +68,7 @@ Architecture follows reference patterns from comment-microservice.
 
 | Gateway | Events | Module | File |
 |---------|--------|--------|------|
-| ChatGateway | joinConversation, leaveConversation, typing, stopTyping, newMessage (broadcast), userTyping (broadcast), userStoppedTyping (broadcast), presenceUpdate (broadcast), readReceipt (broadcast), reactionAdded (broadcast), reactionRemoved (broadcast), userMentioned (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
+| ChatGateway | joinConversation, leaveConversation, typing, stopTyping, newMessage (broadcast), userTyping (broadcast), userStoppedTyping (broadcast), presenceUpdate (broadcast), readReceipt (broadcast), reactionAdded (broadcast), reactionRemoved (broadcast), userMentioned (broadcast), threadReply (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
 
 ## DTOs
 <!-- PIN: dto -->
@@ -76,7 +77,7 @@ Architecture follows reference patterns from comment-microservice.
 |-----|--------|------|-----------|
 | CreateConversationDto | ConversationModule | src/conversation/dto/create-conversation.dto.ts | title?, type?, participantIds |
 | UpdateConversationDto | ConversationModule | src/conversation/dto/update-conversation.dto.ts | title?, type? (PartialType) |
-| CreateMessageDto | MessageModule | src/message/dto/create-message.dto.ts | content, conversationId, senderId |
+| CreateMessageDto | MessageModule | src/message/dto/create-message.dto.ts | content, conversationId, senderId, parentMessageId? |
 | UpdateMessageDto | MessageModule | src/message/dto/update-message.dto.ts | content? |
 | AddParticipantDto | ParticipantModule | src/participant/dto/add-participant.dto.ts | conversationId, userId, role? |
 | UpdateParticipantDto | ParticipantModule | src/participant/dto/update-participant.dto.ts | role |

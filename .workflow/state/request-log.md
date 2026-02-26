@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-022 | 2026-02-26
+**Type**: feature
+**Tags**: #domain #threads #messages #websocket
+**Request**: "Add reply threads on messages (wf-b4f22cbe)"
+**Result**: parentMessageId added to Message model (self-referencing relation with @@index). CreateMessageDto extended with optional parentMessageId. CreateMessageController validates parent exists + same conversation, flattens nested replies to original parent, broadcasts threadReply event. ListThreadController at GET /api/message/thread/:parentMessageId returns non-deleted replies sorted ASC. GetMessageController includes replyCount from _count.replies. 12 new tests (139 total).
+**Files**: prisma/models/message.prisma, src/message/dto/create-message.dto.ts, src/message/controllers/create-message.controller.ts, src/message/controllers/get-message.controller.ts, src/message/controllers/list-thread.controller.ts, src/message/message.service.ts, src/message/message.module.ts, src/message/message.spec.ts
+
+---
+
 ### R-021 | 2026-02-26
 **Type**: feature
 **Tags**: #domain #mentions #notifications #websocket

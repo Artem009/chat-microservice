@@ -3,27 +3,18 @@ import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { BaseController } from './base.controller';
 import { MessageService } from '../message.service';
 import { ChatGateway } from '../../chat-gateway/chat.gateway';
-import { NotFoundException } from '../../exeption';
 
 @ApiTags('message')
 @ApiSecurity('authorization')
 @Controller('api/message')
-export class GetMessageController extends BaseController {
+export class ListThreadController extends BaseController {
   constructor(messageService: MessageService, chatGateway: ChatGateway) {
     super(messageService, chatGateway);
   }
 
-  @Get(':id')
-  async get(@Param('id') id: string) {
-    const message = await this.messageService.findOne(id);
-    if (!message || message.deletedAt) {
-      throw new NotFoundException('Message not found');
-    }
-    return {
-      data: {
-        ...message,
-        replyCount: message._count?.replies ?? 0,
-      },
-    };
+  @Get('thread/:parentMessageId')
+  async listThread(@Param('parentMessageId') parentMessageId: string) {
+    const replies = await this.messageService.findReplies(parentMessageId);
+    return { data: replies };
   }
 }

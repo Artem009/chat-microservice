@@ -5,12 +5,7 @@
 ## Now (Current Focus)
 <!-- PIN: now -->
 
-### Threads (Nested Conversations)
-- **Task:** wf-b4f22cbe
-- **Type:** feature
-- **Priority:** P2
-- **Tags:** #domain #threads #messages
-- **Description:** Enable reply threads on messages. Add parentMessageId to Message model, thread-specific endpoints, and WebSocket events for thread activity. Promoted from Next on 2026-02-26.
+_No items._
 
 ---
 
@@ -37,6 +32,12 @@ _No items yet._
 
 ## Completed
 <!-- PIN: completed -->
+
+### Add reply threads on messages
+- **Task:** wf-b4f22cbe
+- **Completed:** 2026-02-26
+- **Type:** feature
+- **Result:** parentMessageId self-referencing relation on Message model. ListThreadController GET /api/message/thread/:parentMessageId. Flat threading (nested replies → original parent). GetMessageController includes replyCount. threadReply WebSocket broadcast. 12 new tests (139 total).
 
 ### Add @mentions in messages
 - **Task:** wf-7ed59642
@@ -118,7 +119,7 @@ _No items yet._
     │                                                                 ──→ [completed] typing-presence
     │                                ──→ [completed] reactions wf-db336127
     │                                ──→ [completed] mentions wf-7ed59642 (+ participant-module)
-    │                                ──→ [NOW] threads wf-b4f22cbe
+    │                                ──→ [completed] threads wf-b4f22cbe
     └──→ [completed] participant-module
 
 [completed] conversation-module (independent, already done)

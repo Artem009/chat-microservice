@@ -10,12 +10,14 @@ import { GetMessageController } from './controllers/get-message.controller';
 import { UpdateMessageController } from './controllers/update-message.controller';
 import { DeleteMessageController } from './controllers/delete-message.controller';
 import { MarkReadController } from './controllers/mark-read.controller';
+import { ListThreadController } from './controllers/list-thread.controller';
 
 @Module({
   imports: [PrismaModule, ChatGatewayModule, ParticipantModule, MentionModule],
   controllers: [
     CreateMessageController,
     ListMessageController,
+    ListThreadController,
     GetMessageController,
     UpdateMessageController,
     DeleteMessageController,
