@@ -1,5 +1,5 @@
 {
-  "lastActive": "2026-02-26T15:52:34.080Z",
+  "lastActive": "2026-02-26T16:16:23.894Z",
   "cliSessionId": "7775b79d-8e77-4dc9-816f-647c52a28841",
   "currentTask": null,
   "recentFiles": [],
@@ -17,7 +17,7 @@
   },
   "lastSessionSummary": null,
   "bypassTracking": {
-    "count": 37,
+    "count": 38,
     "attempts": [
       {
         "timestamp": "2026-02-23T15:06:51.264Z",
@@ -274,6 +274,13 @@
       {
         "timestamp": "2026-02-26T15:38:14.377Z",
         "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/mention/mention.spec.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T16:16:23.893Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/specs/wf-728525a3.md",
         "operation": "write",
         "reason": "no_task_auto_create_disabled",
         "taskId": null

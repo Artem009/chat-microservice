@@ -5,6 +5,17 @@
   "blocked": [],
   "recentlyCompleted": [
     {
+      "id": "wf-728525a3",
+      "title": "Update E2E tests for new endpoints and WebSocket events",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-quality",
+      "tags": ["#testing", "#e2e", "#quality"],
+      "status": "completed",
+      "startedAt": "2026-02-26T16:17:00.000Z",
+      "completedAt": "2026-02-26T16:20:00.000Z"
+    },
+    {
       "id": "wf-b4f22cbe",
       "title": "Add reply threads on messages",
       "type": "feature",

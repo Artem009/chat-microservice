@@ -31,6 +31,16 @@ export function createMockPrismaService() {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    reaction: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      delete: jest.fn(),
+    },
+    mention: {
+      createManyAndReturn: jest.fn(),
+      findMany: jest.fn(),
+    },
     $connect: jest.fn(),
     $disconnect: jest.fn(),
   };

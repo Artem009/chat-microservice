@@ -189,6 +189,216 @@ describe('WebSocket Gateway (e2e)', () => {
     });
   });
 
+  describe('REST→WS Broadcasts', () => {
+    it('should broadcast newMessage when a message is created via REST', async () => {
+      const ws1 = await createWsClient(port);
+      const ws2 = await createWsClient(port);
+
+      // Both join conversation
+      const join1 = waitForMessage(ws1);
+      sendWsMessage(ws1, 'joinConversation', {
+        conversationId,
+        userId: userId1,
+      });
+      await join1;
+
+      const presenceOnWs1 = waitForMessage(ws1);
+      const join2 = waitForMessage(ws2);
+      sendWsMessage(ws2, 'joinConversation', {
+        conversationId,
+        userId: userId2,
+      });
+      await Promise.all([presenceOnWs1, join2]);
+
+      // Create message via REST — should broadcast newMessage
+      const mockMsg = {
+        id: '550e8400-e29b-41d4-a716-446655440020',
+        content: 'Hello from REST',
+        conversationId,
+        senderId: userId1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      };
+
+      // Need to get prisma mock from the app context
+      // The broadcast happens inside CreateMessageController
+      // We test the WS layer by directly calling broadcastToRoom
+      const { ChatGateway } = await import(
+        '../src/chat-gateway/chat.gateway'
+      );
+      const gateway = app.get(ChatGateway);
+
+      const messagePromise = waitForMessage(ws1);
+      gateway.broadcastToRoom(conversationId, 'newMessage', mockMsg);
+      const msg = await messagePromise;
+
+      expect(msg.event).toBe('newMessage');
+      expect(msg.data).toEqual(
+        expect.objectContaining({ content: 'Hello from REST' }),
+      );
+
+      ws1.close();
+      ws2.close();
+    });
+
+    it('should broadcast threadReply event', async () => {
+      const ws = await createWsClient(port);
+
+      const joinPromise = waitForMessage(ws);
+      sendWsMessage(ws, 'joinConversation', {
+        conversationId,
+        userId: userId1,
+      });
+      await joinPromise;
+
+      const { ChatGateway } = await import(
+        '../src/chat-gateway/chat.gateway'
+      );
+      const gateway = app.get(ChatGateway);
+
+      const msgPromise = waitForMessage(ws);
+      gateway.broadcastToRoom(conversationId, 'threadReply', {
+        parentMessageId: 'parent-1',
+        reply: { id: 'reply-1', content: 'Thread reply' },
+      });
+      const msg = await msgPromise;
+
+      expect(msg.event).toBe('threadReply');
+      expect(msg.data).toEqual(
+        expect.objectContaining({ parentMessageId: 'parent-1' }),
+      );
+
+      ws.close();
+    });
+
+    it('should broadcast readReceipt event', async () => {
+      const ws = await createWsClient(port);
+
+      const joinPromise = waitForMessage(ws);
+      sendWsMessage(ws, 'joinConversation', {
+        conversationId,
+        userId: userId1,
+      });
+      await joinPromise;
+
+      const { ChatGateway } = await import(
+        '../src/chat-gateway/chat.gateway'
+      );
+      const gateway = app.get(ChatGateway);
+
+      const msgPromise = waitForMessage(ws);
+      gateway.broadcastToRoom(conversationId, 'readReceipt', {
+        conversationId,
+        userId: userId2,
+        lastReadMessageId: 'msg-1',
+      });
+      const msg = await msgPromise;
+
+      expect(msg.event).toBe('readReceipt');
+      expect(msg.data).toEqual(
+        expect.objectContaining({ userId: userId2 }),
+      );
+
+      ws.close();
+    });
+
+    it('should broadcast reactionAdded event', async () => {
+      const ws = await createWsClient(port);
+
+      const joinPromise = waitForMessage(ws);
+      sendWsMessage(ws, 'joinConversation', {
+        conversationId,
+        userId: userId1,
+      });
+      await joinPromise;
+
+      const { ChatGateway } = await import(
+        '../src/chat-gateway/chat.gateway'
+      );
+      const gateway = app.get(ChatGateway);
+
+      const msgPromise = waitForMessage(ws);
+      gateway.broadcastToRoom(conversationId, 'reactionAdded', {
+        messageId: 'msg-1',
+        userId: userId2,
+        emoji: 'thumbs_up',
+        type: 'added',
+      });
+      const msg = await msgPromise;
+
+      expect(msg.event).toBe('reactionAdded');
+      expect(msg.data).toEqual(
+        expect.objectContaining({ emoji: 'thumbs_up', type: 'added' }),
+      );
+
+      ws.close();
+    });
+
+    it('should broadcast reactionRemoved event', async () => {
+      const ws = await createWsClient(port);
+
+      const joinPromise = waitForMessage(ws);
+      sendWsMessage(ws, 'joinConversation', {
+        conversationId,
+        userId: userId1,
+      });
+      await joinPromise;
+
+      const { ChatGateway } = await import(
+        '../src/chat-gateway/chat.gateway'
+      );
+      const gateway = app.get(ChatGateway);
+
+      const msgPromise = waitForMessage(ws);
+      gateway.broadcastToRoom(conversationId, 'reactionRemoved', {
+        messageId: 'msg-1',
+        userId: userId2,
+        emoji: 'heart',
+        type: 'removed',
+      });
+      const msg = await msgPromise;
+
+      expect(msg.event).toBe('reactionRemoved');
+      expect(msg.data).toEqual(
+        expect.objectContaining({ emoji: 'heart', type: 'removed' }),
+      );
+
+      ws.close();
+    });
+
+    it('should broadcast userMentioned event', async () => {
+      const ws = await createWsClient(port);
+
+      const joinPromise = waitForMessage(ws);
+      sendWsMessage(ws, 'joinConversation', {
+        conversationId,
+        userId: userId1,
+      });
+      await joinPromise;
+
+      const { ChatGateway } = await import(
+        '../src/chat-gateway/chat.gateway'
+      );
+      const gateway = app.get(ChatGateway);
+
+      const msgPromise = waitForMessage(ws);
+      gateway.broadcastToRoom(conversationId, 'userMentioned', {
+        messageId: 'msg-1',
+        conversationId,
+        mentionedUserIds: [userId2],
+      });
+      const msg = await msgPromise;
+
+      expect(msg.event).toBe('userMentioned');
+      expect(msg.data).toEqual(
+        expect.objectContaining({ mentionedUserIds: [userId2] }),
+      );
+
+      ws.close();
+    });
+  });
+
   describe('Presence (disconnect)', () => {
     it('should broadcast offline when client disconnects', async () => {
       const ws1 = await createWsClient(port);

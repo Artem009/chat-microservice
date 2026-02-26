@@ -219,6 +219,41 @@ describe('Message (e2e)', () => {
     });
   });
 
+  describe('GET /api/message/thread/:parentMessageId', () => {
+    it('should list thread replies for a parent message', async () => {
+      const mockReply = {
+        ...mockMessage,
+        id: '550e8400-e29b-41d4-a716-446655440021',
+        parentMessageId: mockMessage.id,
+      };
+      prisma.message.findMany.mockResolvedValue([mockReply]);
+
+      const response = await app.inject({
+        method: 'GET',
+        url: `/api/message/thread/${mockMessage.id}`,
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = parseListBody(response);
+      expect(body.data).toBeDefined();
+      expect(Array.isArray(body.data)).toBe(true);
+      expect(body.data).toHaveLength(1);
+    });
+
+    it('should return empty array when no replies exist', async () => {
+      prisma.message.findMany.mockResolvedValue([]);
+
+      const response = await app.inject({
+        method: 'GET',
+        url: `/api/message/thread/${mockMessage.id}`,
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = parseListBody(response);
+      expect(body.data).toEqual([]);
+    });
+  });
+
   describe('POST /api/message/read (Mark Read)', () => {
     it('should mark messages as read and return participant', async () => {
       prisma.participant.findUnique.mockResolvedValue(mockParticipant);

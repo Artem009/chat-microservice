@@ -33,6 +33,7 @@
 - [x] Emoji reactions on messages (R-020)
 - [x] @mentions in messages (R-021)
 - [x] Reply threads on messages (R-022)
+- [x] E2E tests updated for full coverage (R-023)
 
 ## Session Notes
 <!-- Updated by /wogi-session-end -->

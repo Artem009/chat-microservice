@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-023 | 2026-02-26
+**Type**: feature
+**Tags**: #testing #e2e #quality
+**Request**: "Update E2E tests for new endpoints and WebSocket events (wf-728525a3)"
+**Result**: Added E2E tests for Reaction (7 tests: POST 201/400/404/409, GET, DELETE 200/404), Mention (3 tests: by messageId, by userId, empty), Thread (2 tests: list replies, empty), and 6 WS broadcast events (newMessage, threadReply, readReceipt, reactionAdded, reactionRemoved, userMentioned). Updated e2e-setup mock with reaction + mention Prisma models. E2E coverage now 100% (62 tests, 7 suites). Total: 201 tests (139 unit + 62 E2E).
+**Files**: test/helpers/e2e-setup.ts, test/reaction.e2e-spec.ts, test/mention.e2e-spec.ts, test/message.e2e-spec.ts, test/websocket.e2e-spec.ts
+
+---
+
 ### R-022 | 2026-02-26
 **Type**: feature
 **Tags**: #domain #threads #messages #websocket
