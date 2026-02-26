@@ -5,20 +5,19 @@
 ## Now (Current Focus)
 <!-- PIN: now -->
 
-_No items._
+### Threads (Nested Conversations)
+- **Task:** wf-b4f22cbe
+- **Type:** feature
+- **Priority:** P2
+- **Tags:** #domain #threads #messages
+- **Description:** Enable reply threads on messages. Add parentMessageId to Message model, thread-specific endpoints, and WebSocket events for thread activity. Promoted from Next on 2026-02-26.
 
 ---
 
 ## Next (Ready to Plan)
 <!-- PIN: next -->
 
-### Threads (Nested Conversations)
-- **Type:** feature
-- **Priority:** P2
-- **Tags:** #domain #threads #messages
-- **Description:** Enable reply threads on messages. Add parentMessageId to Message model, thread-specific endpoints, and WebSocket events for thread activity.
-- **Depends On:** Message module, WebSocket gateway
-- **Key Files:** src/message/, prisma/models/message.prisma
+_No items._
 
 ---
 
@@ -119,7 +118,7 @@ _No items yet._
     │                                                                 ──→ [completed] typing-presence
     │                                ──→ [completed] reactions wf-db336127
     │                                ──→ [completed] mentions wf-7ed59642 (+ participant-module)
-    │                                ──→ [next] threads
+    │                                ──→ [NOW] threads wf-b4f22cbe
     └──→ [completed] participant-module
 
 [completed] conversation-module (independent, already done)
