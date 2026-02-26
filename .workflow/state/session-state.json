@@ -1,5 +1,5 @@
 {
-  "lastActive": "2026-02-26T10:14:16.986Z",
+  "lastActive": "2026-02-26T10:52:58.590Z",
   "cliSessionId": "d8f8ef6c-05e1-4173-a94d-e2b9e17fd2de",
   "currentTask": null,
   "recentFiles": [],
@@ -17,7 +17,7 @@
   },
   "lastSessionSummary": null,
   "bypassTracking": {
-    "count": 25,
+    "count": 32,
     "attempts": [
       {
         "timestamp": "2026-02-23T15:06:51.264Z",
@@ -190,6 +190,55 @@
       {
         "timestamp": "2026-02-26T10:14:16.985Z",
         "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/roadmap.md",
+        "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T10:26:14.878Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/roadmap.md",
+        "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T10:37:47.332Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/roadmap.md",
+        "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T10:49:59.876Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/test/conversation.e2e-spec.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T10:50:19.411Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/test/message.e2e-spec.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T10:50:34.482Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/test/participant.e2e-spec.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T10:50:54.029Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/test/websocket.e2e-spec.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T10:52:58.588Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/test/message.e2e-spec.ts",
         "operation": "edit",
         "reason": "no_task_auto_create_disabled",
         "taskId": null

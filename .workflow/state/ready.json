@@ -1,7 +1,9 @@
 {
-  "lastUpdated": "2026-02-26T10:53:08.496Z",
+  "lastUpdated": "2026-02-26T11:01:12.595Z",
   "ready": [],
-  "inProgress": [
+  "inProgress": [],
+  "blocked": [],
+  "recentlyCompleted": [
     {
       "id": "wf-0bfcc892",
       "title": "Add Integration Tests (E2E) for all API endpoints and WebSocket events",
@@ -13,12 +15,10 @@
         "#e2e",
         "#quality"
       ],
-      "status": "in_progress",
-      "startedAt": "2026-02-26T10:42:29.941Z"
-    }
-  ],
-  "blocked": [],
-  "recentlyCompleted": [
+      "status": "completed",
+      "startedAt": "2026-02-26T10:42:29.941Z",
+      "completedAt": "2026-02-26T11:01:12.594Z"
+    },
     {
       "id": "wf-2a1cd5a6",
       "title": "Create Chat Domain v2 plan and update pl-chat-domain",
