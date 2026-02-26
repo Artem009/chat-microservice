@@ -5,29 +5,21 @@
 ## Now (Current Focus)
 <!-- PIN: now -->
 
-_No active tasks. All data-layer modules complete._
+_No active tasks. All planned features complete._
 
 ---
 
 ## Next (Ready to Plan)
 <!-- PIN: next -->
 
-_No tasks in Next. Read receipts and typing indicators are ready to plan._
+_No tasks in Next._
 
 ---
 
 ## Later (Future Phases)
 <!-- PIN: later -->
 
-### Add typing indicators and online presence
-- **Task:** wf-typing-presence
-- **Priority:** P2
-- **Feature:** ft-advanced
-- **Tags:** #domain #typing #presence
-- **Depends On:** wf-websocket-gateway
-- **Assumes:**
-  - WebSocket gateway supports broadcast events
-  - Presence may need Redis or in-memory store for ephemeral state
+_No items._
 
 ---
 
@@ -40,6 +32,12 @@ _No items yet._
 
 ## Completed
 <!-- PIN: completed -->
+
+### Add typing indicators and online presence
+- **Task:** wf-typing-presence
+- **Completed:** 2026-02-26
+- **Type:** feature
+- **Result:** userId added to JoinRoomDto, TypingDto created, 3 new Maps (clientUserMap, userClients, typingUsers), typing/stopTyping handlers with broadcastToRoomExcluding, presenceUpdate online on join / offline on disconnect (multi-device aware), 9 new tests (96 total)
 
 ### Add read receipts tracking
 - **Task:** wf-read-receipts
@@ -94,11 +92,11 @@ _No items yet._
 ```
 [completed] prisma-models
     ├──→ [completed] message-module ──→ [completed] websocket-gateway ──→ [completed] read-receipts
-    │                                                                 ──→ [unblocked] typing-presence
+    │                                                                 ──→ [completed] typing-presence
     └──→ [completed] participant-module
 
 [completed] conversation-module (independent, already done)
 ```
 
 ---
-Last updated: 2026-02-25
+Last updated: 2026-02-26

@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-019 | 2026-02-26
+**Type**: feature
+**Tags**: #domain #typing #presence #websocket
+**Request**: "Add typing indicators and online presence (wf-typing-presence)"
+**Result**: Extended ChatGateway with typing indicators and online presence. Added userId to JoinRoomDto. Created TypingDto (conversationId + userId). Added 3 new Maps: clientUserMap (clientId→userId), userClients (userId→Set<clientId>), typingUsers (conversationId→Set<userId>). Added broadcastToRoomExcluding() helper that excludes sender. New WS handlers: typing→broadcasts userTyping, stopTyping→broadcasts userStoppedTyping. Modified joinConversation to store userId mapping and broadcast presenceUpdate online. Modified handleDisconnect to clear typing state and broadcast presenceUpdate offline (multi-device aware — only broadcasts offline when last client disconnects). 9 new tests (96 total). All pass. TypeScript clean. Lint clean.
+**Files**: src/chat-gateway/dto/typing.dto.ts, src/chat-gateway/dto/join-room.dto.ts, src/chat-gateway/chat.gateway.ts, src/chat-gateway/chat-gateway.spec.ts
+
+---
+
 ### R-018 | 2026-02-26
 **Type**: feature
 **Tags**: #domain #read-receipts #websocket

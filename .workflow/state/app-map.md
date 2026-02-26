@@ -59,7 +59,7 @@ Architecture follows reference patterns from comment-microservice.
 
 | Gateway | Events | Module | File |
 |---------|--------|--------|------|
-| ChatGateway | joinConversation, leaveConversation, newMessage (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
+| ChatGateway | joinConversation, leaveConversation, typing, stopTyping, newMessage (broadcast), userTyping (broadcast), userStoppedTyping (broadcast), presenceUpdate (broadcast), readReceipt (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
 
 ## DTOs
 <!-- PIN: dto -->
@@ -72,7 +72,8 @@ Architecture follows reference patterns from comment-microservice.
 | UpdateMessageDto | MessageModule | src/message/dto/update-message.dto.ts | content? |
 | AddParticipantDto | ParticipantModule | src/participant/dto/add-participant.dto.ts | conversationId, userId, role? |
 | UpdateParticipantDto | ParticipantModule | src/participant/dto/update-participant.dto.ts | role |
-| JoinRoomDto | ChatGatewayModule | src/chat-gateway/dto/join-room.dto.ts | conversationId |
+| JoinRoomDto | ChatGatewayModule | src/chat-gateway/dto/join-room.dto.ts | conversationId, userId |
+| TypingDto | ChatGatewayModule | src/chat-gateway/dto/typing.dto.ts | conversationId, userId |
 | MarkReadDto | MessageModule | src/message/dto/mark-read.dto.ts | conversationId, userId, lastReadMessageId |
 
 ## Common
