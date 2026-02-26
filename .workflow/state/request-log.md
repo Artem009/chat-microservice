@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-020 | 2026-02-26
+**Type**: feature
+**Tags**: #domain #reactions #messages #websocket
+**Request**: "Add emoji reactions to messages (wf-db336127)"
+**Result**: Created Reaction Prisma model with composite unique constraint [messageId, userId, emoji]. Added reactions relation on Message model. Created ReactionModule with ReactionService (create/findAll/findOne/remove), 3 controllers: CreateReactionController (POST /api/reaction — validates message exists, handles P2002 unique constraint → ConflictException, broadcasts reactionAdded), DeleteReactionController (DELETE /api/reaction/:id — hard delete, broadcasts reactionRemoved), ListReactionController (GET /api/reaction?messageId=). Created CreateReactionDto with class-validator + Swagger. WebSocket broadcasts reactionAdded/reactionRemoved to conversation room. 14 new tests (110 total). All pass. TypeScript clean. Lint clean.
+**Files**: prisma/models/reaction.prisma, prisma/models/message.prisma, src/reaction/reaction.module.ts, src/reaction/reaction.service.ts, src/reaction/dto/create-reaction.dto.ts, src/reaction/controllers/base.controller.ts, src/reaction/controllers/create-reaction.controller.ts, src/reaction/controllers/delete-reaction.controller.ts, src/reaction/controllers/list-reaction.controller.ts, src/reaction/reaction.spec.ts, src/app.module.ts
+
+---
+
 ### R-019 | 2026-02-26
 **Type**: feature
 **Tags**: #domain #typing #presence #websocket

@@ -5,25 +5,12 @@
 ## Now (Current Focus)
 <!-- PIN: now -->
 
-### Integration Tests (E2E)
-- **Task:** wf-0bfcc892
-- **Type:** quality
-- **Priority:** P1
-- **Tags:** #testing #e2e #quality
-- **Description:** E2E tests for all 16 REST endpoints + WebSocket events. Promoted from Next on 2026-02-26.
+_No items._
 
 ---
 
 ## Next (Ready to Plan)
 <!-- PIN: next -->
-
-### Reactions (Likes / Reactions)
-- **Type:** feature
-- **Priority:** P2
-- **Tags:** #domain #reactions #messages
-- **Description:** Allow users to add emoji reactions to messages (like, heart, thumbs up, etc.). Includes Prisma model, REST endpoints, and WebSocket broadcast.
-- **Depends On:** Message module, WebSocket gateway
-- **Key Files:** src/reaction/, prisma/models/reaction.prisma
 
 ### Mentions (@mentions)
 - **Type:** feature
@@ -59,6 +46,18 @@ _No items yet._
 
 ## Completed
 <!-- PIN: completed -->
+
+### Add emoji reactions to messages
+- **Task:** wf-db336127
+- **Completed:** 2026-02-26
+- **Type:** feature
+- **Result:** Reaction Prisma model with [messageId, userId, emoji] unique constraint. 3 REST endpoints (POST, GET, DELETE). WebSocket reactionAdded/reactionRemoved broadcasts. 14 new tests (110 total).
+
+### Integration Tests (E2E)
+- **Task:** wf-0bfcc892
+- **Completed:** 2026-02-26
+- **Type:** quality
+- **Result:** E2E tests for all 16 REST endpoints + WebSocket events using supertest
 
 ### Add typing indicators and online presence
 - **Task:** wf-typing-presence
@@ -120,14 +119,13 @@ _No items yet._
 [completed] prisma-models
     ├──→ [completed] message-module ──→ [completed] websocket-gateway ──→ [completed] read-receipts
     │                                                                 ──→ [completed] typing-presence
-    │                                ──→ [next] reactions
+    │                                ──→ [completed] reactions wf-db336127
     │                                ──→ [next] mentions (+ participant-module)
     │                                ──→ [next] threads
     └──→ [completed] participant-module
 
 [completed] conversation-module (independent, already done)
-
-[now] integration-tests wf-0bfcc892 (promoted, all deps satisfied)
+[completed] integration-tests wf-0bfcc892
 ```
 
 ---

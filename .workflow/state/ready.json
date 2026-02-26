@@ -5,6 +5,21 @@
   "blocked": [],
   "recentlyCompleted": [
     {
+      "id": "wf-db336127",
+      "title": "Add emoji reactions to messages",
+      "type": "feature",
+      "priority": "P2",
+      "feature": "ft-engagement",
+      "tags": [
+        "#domain",
+        "#reactions",
+        "#messages"
+      ],
+      "status": "completed",
+      "startedAt": "2026-02-26T15:05:00.000Z",
+      "completedAt": "2026-02-26T15:08:00.000Z"
+    },
+    {
       "id": "wf-0bfcc892",
       "title": "Add Integration Tests (E2E) for all API endpoints and WebSocket events",
       "type": "feature",

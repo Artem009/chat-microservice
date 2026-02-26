@@ -12,12 +12,13 @@ Architecture follows reference patterns from comment-microservice.
 
 | Module | Purpose | File | Status |
 |--------|---------|------|--------|
-| AppModule | Root module, imports PrismaModule + ConversationModule + MessageModule + ParticipantModule | src/app.module.ts | Active |
+| AppModule | Root module, imports PrismaModule + ConversationModule + MessageModule + ParticipantModule + ReactionModule | src/app.module.ts | Active |
 | PrismaModule | Database access, exports PrismaService | src/prisma/prisma.module.ts | Active |
 | ConversationModule | Conversation CRUD, imports PrismaModule | src/conversation/conversation.module.ts | Active |
 | MessageModule | Message CRUD scoped to conversations, imports PrismaModule | src/message/message.module.ts | Active |
 | ParticipantModule | Participant management (add/remove/role), imports PrismaModule | src/participant/participant.module.ts | Active |
 | ChatGatewayModule | WebSocket gateway for real-time messaging, exports ChatGateway | src/chat-gateway/chat-gateway.module.ts | Active |
+| ReactionModule | Emoji reactions on messages, imports PrismaModule + ChatGatewayModule + MessageModule | src/reaction/reaction.module.ts | Active |
 
 ## Controllers
 <!-- PIN: controllers -->
@@ -40,8 +41,11 @@ Architecture follows reference patterns from comment-microservice.
 | UpdateParticipantController | /api/participant/:id | PATCH | ParticipantModule | src/participant/controllers/update-participant.controller.ts |
 | RemoveParticipantController | /api/participant/:id | DELETE | ParticipantModule | src/participant/controllers/remove-participant.controller.ts |
 | MarkReadController | /api/message/read | POST | MessageModule | src/message/controllers/mark-read.controller.ts |
+| CreateReactionController | /api/reaction | POST | ReactionModule | src/reaction/controllers/create-reaction.controller.ts |
+| ListReactionController | /api/reaction | GET | ReactionModule | src/reaction/controllers/list-reaction.controller.ts |
+| DeleteReactionController | /api/reaction/:id | DELETE | ReactionModule | src/reaction/controllers/delete-reaction.controller.ts |
 
-**Base classes:** `BaseController` — per-module base for feature controllers (`src/conversation/controllers/base.controller.ts`, `src/message/controllers/base.controller.ts`, `src/participant/controllers/base.controller.ts`)
+**Base classes:** `BaseController` — per-module base for feature controllers (`src/conversation/controllers/base.controller.ts`, `src/message/controllers/base.controller.ts`, `src/participant/controllers/base.controller.ts`, `src/reaction/controllers/base.controller.ts`)
 
 ## Services
 <!-- PIN: services -->
@@ -53,13 +57,14 @@ Architecture follows reference patterns from comment-microservice.
 | ConversationService | ConversationModule | src/conversation/conversation.service.ts | Active |
 | MessageService | MessageModule | src/message/message.service.ts | Active |
 | ParticipantService | ParticipantModule | src/participant/participant.service.ts | Active |
+| ReactionService | ReactionModule | src/reaction/reaction.service.ts | Active |
 
 ## Gateways
 <!-- PIN: gateways -->
 
 | Gateway | Events | Module | File |
 |---------|--------|--------|------|
-| ChatGateway | joinConversation, leaveConversation, typing, stopTyping, newMessage (broadcast), userTyping (broadcast), userStoppedTyping (broadcast), presenceUpdate (broadcast), readReceipt (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
+| ChatGateway | joinConversation, leaveConversation, typing, stopTyping, newMessage (broadcast), userTyping (broadcast), userStoppedTyping (broadcast), presenceUpdate (broadcast), readReceipt (broadcast), reactionAdded (broadcast), reactionRemoved (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
 
 ## DTOs
 <!-- PIN: dto -->
@@ -75,6 +80,7 @@ Architecture follows reference patterns from comment-microservice.
 | JoinRoomDto | ChatGatewayModule | src/chat-gateway/dto/join-room.dto.ts | conversationId, userId |
 | TypingDto | ChatGatewayModule | src/chat-gateway/dto/typing.dto.ts | conversationId, userId |
 | MarkReadDto | MessageModule | src/message/dto/mark-read.dto.ts | conversationId, userId, lastReadMessageId |
+| CreateReactionDto | ReactionModule | src/reaction/dto/create-reaction.dto.ts | messageId, userId, emoji |
 
 ## Common
 <!-- PIN: common -->

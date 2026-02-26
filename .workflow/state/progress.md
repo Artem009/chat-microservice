@@ -29,5 +29,8 @@
 - [x] Read receipts tracking (R-018)
 - [x] Typing indicators and online presence (R-019)
 
+## Engagement Features
+- [x] Emoji reactions on messages (R-020)
+
 ## Session Notes
 <!-- Updated by /wogi-session-end -->

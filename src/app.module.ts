@@ -6,6 +6,7 @@ import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
 import { ParticipantModule } from './participant/participant.module';
 import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
+import { ReactionModule } from './reaction/reaction.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ChatGatewayModule } from './chat-gateway/chat-gateway.module';
     MessageModule,
     ParticipantModule,
     ChatGatewayModule,
+    ReactionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
