@@ -10,15 +10,15 @@ Build the business logic layer for the chat microservice. The infrastructure (Fa
 
 ## Success Criteria
 <!-- PIN: success-criteria -->
-- [ ] Conversation CRUD endpoints functional with Swagger docs
-- [ ] Message CRUD endpoints with conversation scoping
-- [ ] Participant management (add/remove/roles) endpoints
-- [ ] Prisma models with migrations applied
-- [ ] WebSocket gateway for real-time message delivery
-- [ ] Typing indicators and online presence via WebSocket
-- [ ] Read receipts tracked per participant per conversation
-- [ ] All endpoints covered by unit tests
-- [ ] E2E tests for critical flows
+- [x] Conversation CRUD endpoints functional with Swagger docs
+- [x] Message CRUD endpoints with conversation scoping
+- [x] Participant management (add/remove/roles) endpoints
+- [x] Prisma models with migrations applied
+- [x] WebSocket gateway for real-time message delivery
+- [x] Typing indicators and online presence via WebSocket
+- [x] Read receipts tracked per participant per conversation
+- [x] All endpoints covered by unit tests (96 total)
+- [ ] E2E tests for critical flows → Moved to pl-bee7a44d (Chat Domain v2)
 
 ## Items
 <!-- PIN: items -->
@@ -36,7 +36,7 @@ Build the business logic layer for the chat microservice. The infrastructure (Fa
 | Phase 2 | Real-time: WebSocket gateway + live delivery | ft-realtime |
 | Phase 3 | Advanced: Read receipts, typing indicators, roles | ft-advanced |
 
-## Status: ready
-## Progress: 0%
+## Status: completed
+## Progress: 100%
 ## Created: 2026-02-23T18:00:00.000Z
 ## Updated: 2026-02-23T18:00:00.000Z

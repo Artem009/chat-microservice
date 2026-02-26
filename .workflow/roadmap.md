@@ -5,14 +5,41 @@
 ## Now (Current Focus)
 <!-- PIN: now -->
 
-_No active tasks. All planned features complete._
+### Integration Tests (E2E)
+- **Task:** wf-0bfcc892
+- **Type:** quality
+- **Priority:** P1
+- **Tags:** #testing #e2e #quality
+- **Description:** E2E tests for all 16 REST endpoints + WebSocket events. Promoted from Next on 2026-02-26.
 
 ---
 
 ## Next (Ready to Plan)
 <!-- PIN: next -->
 
-_No tasks in Next._
+### Reactions (Likes / Reactions)
+- **Type:** feature
+- **Priority:** P2
+- **Tags:** #domain #reactions #messages
+- **Description:** Allow users to add emoji reactions to messages (like, heart, thumbs up, etc.). Includes Prisma model, REST endpoints, and WebSocket broadcast.
+- **Depends On:** Message module, WebSocket gateway
+- **Key Files:** src/reaction/, prisma/models/reaction.prisma
+
+### Mentions (@mentions)
+- **Type:** feature
+- **Priority:** P2
+- **Tags:** #domain #mentions #notifications
+- **Description:** Parse @userId mentions in message content, create mention records, and notify mentioned users via WebSocket events.
+- **Depends On:** Message module, Participant module, WebSocket gateway
+- **Key Files:** src/mention/, prisma/models/mention.prisma
+
+### Threads (Nested Conversations)
+- **Type:** feature
+- **Priority:** P2
+- **Tags:** #domain #threads #messages
+- **Description:** Enable reply threads on messages. Add parentMessageId to Message model, thread-specific endpoints, and WebSocket events for thread activity.
+- **Depends On:** Message module, WebSocket gateway
+- **Key Files:** src/message/, prisma/models/message.prisma
 
 ---
 
@@ -93,9 +120,14 @@ _No items yet._
 [completed] prisma-models
     ├──→ [completed] message-module ──→ [completed] websocket-gateway ──→ [completed] read-receipts
     │                                                                 ──→ [completed] typing-presence
+    │                                ──→ [next] reactions
+    │                                ──→ [next] mentions (+ participant-module)
+    │                                ──→ [next] threads
     └──→ [completed] participant-module
 
 [completed] conversation-module (independent, already done)
+
+[now] integration-tests wf-0bfcc892 (promoted, all deps satisfied)
 ```
 
 ---

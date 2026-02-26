@@ -1,9 +1,50 @@
 {
-  "lastUpdated": "2026-02-26T10:15:06.101Z",
+  "lastUpdated": "2026-02-26T10:53:08.496Z",
   "ready": [],
-  "inProgress": [],
+  "inProgress": [
+    {
+      "id": "wf-0bfcc892",
+      "title": "Add Integration Tests (E2E) for all API endpoints and WebSocket events",
+      "type": "feature",
+      "priority": "P1",
+      "feature": "ft-quality",
+      "tags": [
+        "#testing",
+        "#e2e",
+        "#quality"
+      ],
+      "status": "in_progress",
+      "startedAt": "2026-02-26T10:42:29.941Z"
+    }
+  ],
   "blocked": [],
   "recentlyCompleted": [
+    {
+      "id": "wf-2a1cd5a6",
+      "title": "Create Chat Domain v2 plan and update pl-chat-domain",
+      "type": "change",
+      "priority": "P3",
+      "tags": [
+        "#planning",
+        "#roadmap"
+      ],
+      "status": "completed",
+      "startedAt": "2026-02-26T10:33:28.370Z",
+      "completedAt": "2026-02-26T10:34:08.248Z"
+    },
+    {
+      "id": "wf-roadmap-update",
+      "title": "Add 4 new roadmap items",
+      "type": "change",
+      "priority": "P3",
+      "tags": [
+        "#roadmap",
+        "#planning"
+      ],
+      "status": "completed",
+      "startedAt": "2026-02-26T10:26:41.431Z",
+      "completedAt": "2026-02-26T10:27:10.312Z"
+    },
     {
       "id": "wf-typing-presence",
       "title": "Add typing indicators and online presence",
@@ -100,46 +141,6 @@
       ],
       "status": "completed",
       "completedAt": "2026-02-23T18:35:00.000Z"
-    },
-    {
-      "id": "wf-prisma-models",
-      "title": "Create Prisma models for chat domain",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-data-layer",
-      "tags": [
-        "#domain",
-        "#prisma",
-        "#database"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T18:20:00.000Z"
-    },
-    {
-      "id": "wf-49745460",
-      "title": "Align tsconfig module system with reference",
-      "type": "refactor",
-      "priority": "P3",
-      "feature": "ft-27ad4502",
-      "tags": [
-        "#infrastructure",
-        "#config"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T17:11:53.117Z"
-    },
-    {
-      "id": "wf-bc6bf0fb",
-      "title": "Install SWC compiler for faster builds",
-      "type": "refactor",
-      "priority": "P3",
-      "feature": "ft-27ad4502",
-      "tags": [
-        "#infrastructure",
-        "#tooling"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T17:12:00.000Z"
     }
   ],
   "backlog": []

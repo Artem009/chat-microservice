@@ -13,8 +13,17 @@
       "progress": 0,
       "createdAt": "2026-02-23T15:37:36.610Z",
       "updatedAt": "2026-02-23T15:37:56.536Z"
+    },
+    "pl-bee7a44d": {
+      "id": "pl-bee7a44d",
+      "title": "Chat Domain v2 — Advanced Features & Quality",
+      "epics": [],
+      "features": [],
+      "status": "ready",
+      "progress": 0,
+      "createdAt": "2026-02-26T10:33:33.802Z"
     }
   },
   "version": "1.0.0",
-  "lastUpdated": "2026-02-23T15:37:56.536Z"
+  "lastUpdated": "2026-02-26T10:33:33.802Z"
 }
