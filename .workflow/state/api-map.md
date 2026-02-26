@@ -35,6 +35,7 @@ API endpoints and client functions. **Check before creating new endpoints.**
 | GET | /api/participant?conversationId | ListParticipantController | ParticipantService | src/participant/controllers/list-participant.controller.ts |
 | PATCH | /api/participant/:id | UpdateParticipantController | ParticipantService | src/participant/controllers/update-participant.controller.ts |
 | DELETE | /api/participant/:id | RemoveParticipantController | ParticipantService | src/participant/controllers/remove-participant.controller.ts |
+| POST | /api/message/read | MarkReadController | ParticipantService | src/message/controllers/mark-read.controller.ts |
 
 **Auth:** All `/api/conversation`, `/api/message`, and `/api/participant` endpoints require `authorization` header.
 **Response format:** `{ data: ... }` envelope. DELETE also includes `message`.

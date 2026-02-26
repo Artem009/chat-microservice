@@ -13,11 +13,11 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const http = require('http');
 const crypto = require('crypto');
 const os = require('os');
+const { execFileSync } = require('child_process');
 
-const { getConfig, PATHS, safeJsonParse } = require('./flow-utils');
+const { PATHS, safeJsonParse, safeJsonParseString } = require('./flow-utils');
 
 // ~/.wogiflow/ directory for user-level state (persists across projects)
 const WOGIFLOW_HOME = path.join(os.homedir(), '.wogiflow');
@@ -28,6 +28,7 @@ const LAST_PUSH_PATH = path.join(WOGIFLOW_HOME, 'last-community-push');
 const CONSENT_PATH = path.join(WOGIFLOW_HOME, 'consent-acknowledged');
 
 const REQUEST_TIMEOUT_MS = 5000;
+const MAX_RESPONSE_BYTES = 512 * 1024; // 512KB max response size
 
 // ──────────────────────────────────────────────
 // Anonymous ID
@@ -146,7 +147,6 @@ function stripPII(data, config) {
   let gitUser = '';
   let gitEmail = '';
   try {
-    const { execFileSync } = require('child_process');
     gitUser = execFileSync('git', ['config', 'user.name'], { encoding: 'utf-8', timeout: 2000 }).trim();
     gitEmail = execFileSync('git', ['config', 'user.email'], { encoding: 'utf-8', timeout: 2000 }).trim();
   } catch {
@@ -159,7 +159,7 @@ function stripPII(data, config) {
     let result = str;
 
     // Replace absolute paths (Unix and Windows)
-    result = result.replace(/(?:\/(?:Users|home|var|tmp|opt|etc|usr)\/[^\s,;:'")\]}>]+)/g, '[PATH]');
+    result = result.replace(/(?:\/(?:Users|home|var|tmp|opt|etc|usr|root|app|srv|run|mnt|media|proc|data)\/[^\s,;:'")\]}>]+)/g, '[PATH]');
     result = result.replace(/(?:[A-Z]:\\[^\s,;:'")\]}>]+)/gi, '[PATH]');
 
     // Replace home directory references
@@ -266,13 +266,17 @@ function collectShareableData(config) {
  * Get WogiFlow version from package.json.
  * @returns {string}
  */
+let _cachedVersion = null;
 function getWogiFlowVersion() {
+  if (_cachedVersion) return _cachedVersion;
   try {
     const pkgPath = path.join(__dirname, '..', 'package.json');
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-    return pkg.version || 'unknown';
+    const pkg = safeJsonParse(pkgPath, {});
+    _cachedVersion = pkg.version || 'unknown';
+    return _cachedVersion;
   } catch {
-    return 'unknown';
+    _cachedVersion = 'unknown';
+    return _cachedVersion;
   }
 }
 
@@ -506,6 +510,42 @@ function collectSkillLearnings() {
 // ──────────────────────────────────────────────
 
 /**
+ * Validate server URL to prevent SSRF attacks.
+ * Enforces HTTPS-only and blocks private/internal addresses.
+ * @param {string} urlStr
+ * @returns {boolean}
+ */
+function isAllowedServerUrl(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    // Enforce HTTPS only
+    if (url.protocol !== 'https:') return false;
+    // Block localhost and loopback
+    // URL.hostname returns IPv6 with bracket delimiters (e.g., '[::1]') — strip them
+    const rawHostname = url.hostname.toLowerCase();
+    const hostname = rawHostname.startsWith('[') ? rawHostname.slice(1, -1) : rawHostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') return false;
+    // Block IPv6 private/loopback ranges
+    if (hostname.startsWith('::ffff:')) return false;      // IPv4-mapped IPv6
+    if (hostname.startsWith('fe80:') || hostname.startsWith('fe80::')) return false;  // Link-local
+    if (hostname.startsWith('fc00:') || hostname.startsWith('fd00:')) return false;   // Unique local (RFC 4193)
+    // Block private IP ranges (RFC-1918 + link-local)
+    const ipMatch = hostname.match(/^(\d+)\.(\d+)\.\d+\.\d+$/);
+    if (ipMatch) {
+      const a = parseInt(ipMatch[1], 10);
+      const b = parseInt(ipMatch[2], 10);
+      if (a === 10) return false;                          // 10.0.0.0/8
+      if (a === 172 && b >= 16 && b <= 31) return false;  // 172.16.0.0/12
+      if (a === 192 && b === 168) return false;            // 192.168.0.0/16
+      if (a === 169 && b === 254) return false;            // 169.254.0.0/16 (link-local)
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Make an HTTPS request with timeout. Fire-and-forget pattern.
  * @param {string} method - HTTP method
  * @param {string} urlStr - Full URL
@@ -516,13 +556,19 @@ function collectSkillLearnings() {
 function httpRequest(method, urlStr, body = null, timeoutMs = REQUEST_TIMEOUT_MS) {
   return new Promise((resolve) => {
     try {
-      const url = new URL(urlStr);
-      const isHttps = url.protocol === 'https:';
-      const transport = isHttps ? https : http;
+      if (!isAllowedServerUrl(urlStr)) {
+        if (process.env.DEBUG) {
+          console.error(`[flow-community] Blocked request to disallowed URL: ${urlStr}`);
+        }
+        resolve(null);
+        return;
+      }
 
+      const url = new URL(urlStr);
+      // isAllowedServerUrl already enforces HTTPS — use https directly
       const options = {
         hostname: url.hostname,
-        port: url.port || (isHttps ? 443 : 80),
+        port: url.port || 443,
         path: url.pathname + url.search,
         method,
         headers: {
@@ -533,9 +579,17 @@ function httpRequest(method, urlStr, body = null, timeoutMs = REQUEST_TIMEOUT_MS
         timeout: timeoutMs
       };
 
-      const req = transport.request(options, (res) => {
+      const req = https.request(options, (res) => {
         let data = '';
-        res.on('data', (chunk) => { data += chunk; });
+        res.on('data', (chunk) => {
+          // Check size BEFORE appending to prevent single oversized chunk from buffering
+          if (data.length + chunk.length > MAX_RESPONSE_BYTES) {
+            req.destroy();
+            resolve(null);
+            return;
+          }
+          data += chunk;
+        });
         res.on('end', () => {
           resolve({ statusCode: res.statusCode, body: data });
         });
@@ -626,7 +680,8 @@ async function pullFromServer(config) {
 
     if (result && result.statusCode >= 200 && result.statusCode < 300) {
       try {
-        const knowledge = JSON.parse(result.body);
+        const knowledge = safeJsonParseString(result.body);
+        if (!knowledge || typeof knowledge !== 'object') return cached || null;
         knowledge._cachedAt = new Date().toISOString();
         saveCommunityCache(knowledge);
         return knowledge;
@@ -663,10 +718,13 @@ async function submitSuggestion(text, type, config) {
   const validTypes = ['idea', 'bug', 'improvement'];
   const suggestionType = validTypes.includes(type) ? type : 'idea';
 
+  // Strip PII from suggestion text before sending
+  const strippedText = stripPII(text.trim(), config);
+
   const suggestion = {
     anonId: getOrCreateAnonId(),
     type: suggestionType,
-    content: text.trim(),
+    content: typeof strippedText === 'string' ? strippedText : text.trim(),
     wogiflowVersion: getWogiFlowVersion(),
     submittedAt: new Date().toISOString()
   };
@@ -701,7 +759,7 @@ function queuePendingSuggestion(suggestion) {
     if (fs.existsSync(PENDING_SUGGESTIONS_PATH)) {
       try {
         const content = fs.readFileSync(PENDING_SUGGESTIONS_PATH, 'utf-8');
-        const parsed = JSON.parse(content);
+        const parsed = safeJsonParseString(content, []);
         if (Array.isArray(parsed)) {
           pending = parsed;
         }
@@ -737,7 +795,7 @@ async function retryPendingSuggestions(config) {
     const content = fs.readFileSync(PENDING_SUGGESTIONS_PATH, 'utf-8');
     let pending;
     try {
-      pending = JSON.parse(content);
+      pending = safeJsonParseString(content, null);
     } catch {
       return;
     }
@@ -785,7 +843,7 @@ function loadCommunityCache() {
   try {
     if (!fs.existsSync(COMMUNITY_CACHE_PATH)) return null;
     const content = fs.readFileSync(COMMUNITY_CACHE_PATH, 'utf-8');
-    return JSON.parse(content);
+    return safeJsonParseString(content, null);
   } catch {
     return null;
   }
@@ -887,25 +945,29 @@ function mergeModelIntelligence(items) {
       if (!fs.existsSync(filePath)) continue;
 
       const content = fs.readFileSync(filePath, 'utf-8');
+      const detail = (item.adjustments || item.strengths || item.weaknesses || '').slice(0, 500);
+      if (!detail) continue;
 
       // Check if community section already exists
       if (content.includes(COMMUNITY_MARKER)) {
-        // Section exists — check for this specific item
-        const detail = item.adjustments || item.strengths || item.weaknesses || '';
-        if (!detail || content.includes(detail.slice(0, 80))) {
+        // Scope dedup check to community section only (not full file)
+        const markerIndex = content.indexOf(COMMUNITY_MARKER);
+        const communitySection = content.slice(markerIndex);
+        if (communitySection.includes(detail)) {
           continue; // Already merged
         }
-        // Append to existing section
-        const markerIndex = content.indexOf(COMMUNITY_MARKER);
-        const insertPoint = content.indexOf('\n', markerIndex) + 1;
+        // Append at END of community section (next ## heading or EOF) for chronological order
+        const afterMarker = content.slice(markerIndex);
+        const nextHeadingMatch = afterMarker.match(/\n## /);
+        const insertPoint = nextHeadingMatch
+          ? markerIndex + nextHeadingMatch.index
+          : content.length;
         const newLine = `- ${detail}\n`;
         const updated = content.slice(0, insertPoint) + newLine + content.slice(insertPoint);
         fs.writeFileSync(filePath, updated, 'utf-8');
         merged++;
       } else {
         // Add new community section at end of file
-        const detail = item.adjustments || item.strengths || item.weaknesses || '';
-        if (!detail) continue;
         const section = `\n\n## Community Learnings\n${COMMUNITY_MARKER}\n- ${detail}\n`;
         fs.writeFileSync(filePath, content.trimEnd() + section, 'utf-8');
         merged++;
@@ -1013,7 +1075,7 @@ function mergePatterns(items) {
     // Check if this community pattern already exists
     if (content.includes(patternName)) continue;
 
-    const description = item.description.replace(/\|/g, '/'); // Escape pipes for table
+    const description = item.description.slice(0, 500).replace(/\|/g, '/'); // Escape pipes for table, cap length
     const occurrences = item.occurrences || 1;
     newRows.push(`| ${today} | ${patternName} | Community: ${description} | ${occurrences} | Informational |`);
     merged++;

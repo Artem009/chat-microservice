@@ -19,16 +19,6 @@ _No tasks in Next. Read receipts and typing indicators are ready to plan._
 ## Later (Future Phases)
 <!-- PIN: later -->
 
-### Add read receipts tracking
-- **Task:** wf-read-receipts
-- **Priority:** P2
-- **Feature:** ft-advanced
-- **Tags:** #domain #read-receipts
-- **Depends On:** wf-websocket-gateway
-- **Assumes:**
-  - WebSocket gateway is operational for real-time delivery
-  - May require new Prisma model (ReadReceipt)
-
 ### Add typing indicators and online presence
 - **Task:** wf-typing-presence
 - **Priority:** P2
@@ -50,6 +40,12 @@ _No items yet._
 
 ## Completed
 <!-- PIN: completed -->
+
+### Add read receipts tracking
+- **Task:** wf-read-receipts
+- **Completed:** 2026-02-26
+- **Type:** feature
+- **Result:** lastReadMessageId on Participant, POST /api/message/read endpoint, unreadCount in conversation list, readReceipt WebSocket broadcast, 9 new tests (87 total)
 
 ### Create WebSocket gateway for real-time messaging
 - **Task:** wf-websocket-gateway
@@ -97,7 +93,7 @@ _No items yet._
 
 ```
 [completed] prisma-models
-    ├──→ [completed] message-module ──→ [completed] websocket-gateway ──→ [unblocked] read-receipts
+    ├──→ [completed] message-module ──→ [completed] websocket-gateway ──→ [completed] read-receipts
     │                                                                 ──→ [unblocked] typing-presence
     └──→ [completed] participant-module
 

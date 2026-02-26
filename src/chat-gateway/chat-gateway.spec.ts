@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatGateway } from './chat.gateway';
 
@@ -188,9 +187,7 @@ describe('ChatGateway', () => {
       gateway.handleConnection(client);
       gateway.handleJoinConversation({ conversationId: 'conv-1' }, client);
 
-      expect(() =>
-        gateway.broadcastToRoom('conv-1', 'test', {}),
-      ).not.toThrow();
+      expect(() => gateway.broadcastToRoom('conv-1', 'test', {})).not.toThrow();
     });
 
     it('should be a no-op for non-existent rooms', () => {

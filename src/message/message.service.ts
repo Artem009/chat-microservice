@@ -41,4 +41,29 @@ export class MessageService {
       data: { deletedAt: new Date() },
     });
   }
+
+  async countUnread(
+    conversationId: string,
+    userId: string,
+    lastReadMessageId: string | null,
+  ): Promise<number> {
+    const where: Prisma.MessageWhereInput = {
+      conversationId,
+      deletedAt: null,
+      senderId: { not: userId },
+    };
+
+    if (lastReadMessageId) {
+      const lastReadMessage = await this.prisma.message.findUnique({
+        where: { id: lastReadMessageId },
+        select: { createdAt: true },
+      });
+
+      if (lastReadMessage) {
+        where.createdAt = { gt: lastReadMessage.createdAt };
+      }
+    }
+
+    return this.prisma.message.count({ where });
+  }
 }

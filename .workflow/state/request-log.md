@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-018 | 2026-02-26
+**Type**: feature
+**Tags**: #domain #read-receipts #websocket
+**Request**: "Add read receipts tracking (wf-read-receipts)"
+**Result**: Added lastReadMessageId field to Participant model with relation to Message. Created MarkReadController (POST /api/message/read) that validates participant+message, updates lastReadMessageId via ParticipantService, and broadcasts readReceipt event via ChatGateway. Added ConversationService.findAllWithUnreadCount() that computes unread count per conversation excluding user's own messages. Updated ListConversationController to include unreadCount in response. Added MessageService.countUnread() helper. Imported ParticipantModule in MessageModule for cross-module injection. 9 new tests (6 mark-read + 3 countUnread). All 87 tests pass. TypeScript clean.
+**Files**: prisma/models/participant.prisma, prisma/models/message.prisma, src/message/dto/mark-read.dto.ts, src/message/controllers/mark-read.controller.ts, src/message/message.module.ts, src/message/message.service.ts, src/participant/participant.service.ts, src/conversation/conversation.service.ts, src/conversation/controllers/list-conversation.controller.ts, src/message/message.spec.ts, src/conversation/conversation.spec.ts
+
+---
+
 ### R-017 | 2026-02-25
 **Type**: feature
 **Tags**: #domain #websocket #realtime

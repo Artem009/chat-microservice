@@ -39,6 +39,7 @@ Architecture follows reference patterns from comment-microservice.
 | ListParticipantController | /api/participant | GET | ParticipantModule | src/participant/controllers/list-participant.controller.ts |
 | UpdateParticipantController | /api/participant/:id | PATCH | ParticipantModule | src/participant/controllers/update-participant.controller.ts |
 | RemoveParticipantController | /api/participant/:id | DELETE | ParticipantModule | src/participant/controllers/remove-participant.controller.ts |
+| MarkReadController | /api/message/read | POST | MessageModule | src/message/controllers/mark-read.controller.ts |
 
 **Base classes:** `BaseController` — per-module base for feature controllers (`src/conversation/controllers/base.controller.ts`, `src/message/controllers/base.controller.ts`, `src/participant/controllers/base.controller.ts`)
 
@@ -72,6 +73,7 @@ Architecture follows reference patterns from comment-microservice.
 | AddParticipantDto | ParticipantModule | src/participant/dto/add-participant.dto.ts | conversationId, userId, role? |
 | UpdateParticipantDto | ParticipantModule | src/participant/dto/update-participant.dto.ts | role |
 | JoinRoomDto | ChatGatewayModule | src/chat-gateway/dto/join-room.dto.ts | conversationId |
+| MarkReadDto | MessageModule | src/message/dto/mark-read.dto.ts | conversationId, userId, lastReadMessageId |
 
 ## Common
 <!-- PIN: common -->

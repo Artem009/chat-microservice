@@ -80,9 +80,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.rooms.delete(conversationId);
     }
     this.clientRooms.get(client.id)?.delete(conversationId);
-    this.logger.log(
-      `Client ${client.id} left conversation: ${conversationId}`,
-    );
+    this.logger.log(`Client ${client.id} left conversation: ${conversationId}`);
     return { event: 'leftConversation', data: { conversationId } };
   }
 

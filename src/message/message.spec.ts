@@ -3,11 +3,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MessageService } from './message.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatGateway } from '../chat-gateway/chat.gateway';
+import { ParticipantService } from '../participant/participant.service';
 import { CreateMessageController } from './controllers/create-message.controller';
 import { ListMessageController } from './controllers/list-message.controller';
 import { GetMessageController } from './controllers/get-message.controller';
 import { UpdateMessageController } from './controllers/update-message.controller';
 import { DeleteMessageController } from './controllers/delete-message.controller';
+import { MarkReadController } from './controllers/mark-read.controller';
 import { NotFoundException } from '../exeption';
 
 const mockMessage = {
@@ -28,17 +30,41 @@ const mockMessage = {
   },
 };
 
+const mockParticipant = {
+  id: 'part-1',
+  conversationId: 'conv-1',
+  userId: 'user-2',
+  role: 'MEMBER',
+  joinedAt: new Date(),
+  leftAt: null,
+  lastReadMessageId: null,
+};
+
 const mockPrismaService = {
   message: {
     create: jest.fn().mockResolvedValue(mockMessage),
     findMany: jest.fn().mockResolvedValue([mockMessage]),
     findUnique: jest.fn().mockResolvedValue(mockMessage),
     update: jest.fn().mockResolvedValue(mockMessage),
+    count: jest.fn().mockResolvedValue(5),
+  },
+  participant: {
+    findUnique: jest.fn().mockResolvedValue(mockParticipant),
+    update: jest
+      .fn()
+      .mockResolvedValue({ ...mockParticipant, lastReadMessageId: 'msg-1' }),
   },
 };
 
 const mockChatGateway = {
   broadcastToRoom: jest.fn(),
+};
+
+const mockParticipantService = {
+  findByConversationAndUser: jest.fn().mockResolvedValue(mockParticipant),
+  updateLastReadMessage: jest
+    .fn()
+    .mockResolvedValue({ ...mockParticipant, lastReadMessageId: 'msg-1' }),
 };
 
 describe('MessageModule', () => {
@@ -48,6 +74,7 @@ describe('MessageModule', () => {
   let getController: GetMessageController;
   let updateController: UpdateMessageController;
   let deleteController: DeleteMessageController;
+  let markReadController: MarkReadController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -55,6 +82,7 @@ describe('MessageModule', () => {
         MessageService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ChatGateway, useValue: mockChatGateway },
+        { provide: ParticipantService, useValue: mockParticipantService },
       ],
       controllers: [
         CreateMessageController,
@@ -62,6 +90,7 @@ describe('MessageModule', () => {
         GetMessageController,
         UpdateMessageController,
         DeleteMessageController,
+        MarkReadController,
       ],
     }).compile();
 
@@ -77,6 +106,7 @@ describe('MessageModule', () => {
     deleteController = module.get<DeleteMessageController>(
       DeleteMessageController,
     );
+    markReadController = module.get<MarkReadController>(MarkReadController);
   });
 
   afterEach(() => {
@@ -225,6 +255,131 @@ describe('MessageModule', () => {
       await expect(deleteController.remove('nonexistent')).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('MarkReadController', () => {
+    it('should mark messages as read and return updated participant', async () => {
+      const result = await markReadController.markRead({
+        conversationId: 'conv-1',
+        userId: 'user-2',
+        lastReadMessageId: 'msg-1',
+      });
+      expect(result).toEqual({
+        data: { ...mockParticipant, lastReadMessageId: 'msg-1' },
+      });
+      expect(
+        mockParticipantService.findByConversationAndUser,
+      ).toHaveBeenCalledWith('conv-1', 'user-2');
+      expect(mockParticipantService.updateLastReadMessage).toHaveBeenCalledWith(
+        'conv-1',
+        'user-2',
+        'msg-1',
+      );
+    });
+
+    it('should broadcast readReceipt event via WebSocket', async () => {
+      await markReadController.markRead({
+        conversationId: 'conv-1',
+        userId: 'user-2',
+        lastReadMessageId: 'msg-1',
+      });
+      expect(mockChatGateway.broadcastToRoom).toHaveBeenCalledWith(
+        'conv-1',
+        'readReceipt',
+        {
+          conversationId: 'conv-1',
+          userId: 'user-2',
+          lastReadMessageId: 'msg-1',
+        },
+      );
+    });
+
+    it('should throw NotFoundException when participant not found', async () => {
+      mockParticipantService.findByConversationAndUser.mockResolvedValueOnce(
+        null,
+      );
+      await expect(
+        markReadController.markRead({
+          conversationId: 'conv-1',
+          userId: 'unknown',
+          lastReadMessageId: 'msg-1',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw NotFoundException when participant has left', async () => {
+      mockParticipantService.findByConversationAndUser.mockResolvedValueOnce({
+        ...mockParticipant,
+        leftAt: new Date(),
+      });
+      await expect(
+        markReadController.markRead({
+          conversationId: 'conv-1',
+          userId: 'user-2',
+          lastReadMessageId: 'msg-1',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw NotFoundException when message not found', async () => {
+      mockPrismaService.message.findUnique.mockResolvedValueOnce(null);
+      await expect(
+        markReadController.markRead({
+          conversationId: 'conv-1',
+          userId: 'user-2',
+          lastReadMessageId: 'nonexistent',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw NotFoundException when message is soft-deleted', async () => {
+      mockPrismaService.message.findUnique.mockResolvedValueOnce({
+        ...mockMessage,
+        deletedAt: new Date(),
+      });
+      await expect(
+        markReadController.markRead({
+          conversationId: 'conv-1',
+          userId: 'user-2',
+          lastReadMessageId: 'msg-1',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('MessageService.countUnread', () => {
+    it('should count all unread messages when lastReadMessageId is null', async () => {
+      const result = await service.countUnread('conv-1', 'user-2', null);
+      expect(result).toBe(5);
+      expect(mockPrismaService.message.count).toHaveBeenCalledWith({
+        where: {
+          conversationId: 'conv-1',
+          deletedAt: null,
+          senderId: { not: 'user-2' },
+        },
+      });
+    });
+
+    it('should count unread messages after lastReadMessage', async () => {
+      mockPrismaService.message.count.mockResolvedValueOnce(3);
+      const result = await service.countUnread('conv-1', 'user-2', 'msg-1');
+      expect(result).toBe(3);
+      expect(mockPrismaService.message.findUnique).toHaveBeenCalledWith({
+        where: { id: 'msg-1' },
+        select: { createdAt: true },
+      });
+    });
+
+    it('should count all messages if lastReadMessage was deleted', async () => {
+      mockPrismaService.message.findUnique.mockResolvedValueOnce(null);
+      mockPrismaService.message.count.mockResolvedValueOnce(10);
+      const result = await service.countUnread(
+        'conv-1',
+        'user-2',
+        'deleted-msg',
+      );
+      expect(result).toBe(10);
     });
   });
 });

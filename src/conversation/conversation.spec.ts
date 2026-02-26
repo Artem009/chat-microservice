@@ -24,6 +24,7 @@ const mockConversation = {
       role: 'ADMIN',
       joinedAt: new Date(),
       leftAt: null,
+      lastReadMessageId: null,
     },
   ],
   messages: [],
@@ -35,6 +36,10 @@ const mockPrismaService = {
     findMany: jest.fn().mockResolvedValue([mockConversation]),
     findUnique: jest.fn().mockResolvedValue(mockConversation),
     update: jest.fn().mockResolvedValue(mockConversation),
+  },
+  message: {
+    count: jest.fn().mockResolvedValue(3),
+    findUnique: jest.fn().mockResolvedValue(null),
   },
 };
 
@@ -150,10 +155,13 @@ describe('ConversationModule', () => {
   });
 
   describe('ListConversationController', () => {
-    it('should list conversations for a user', async () => {
+    it('should list conversations for a user with unreadCount', async () => {
       const result = await listController.list('user-1');
-      expect(result).toEqual({ data: [mockConversation] });
+      expect(result).toEqual({
+        data: [{ ...mockConversation, unreadCount: 3 }],
+      });
       expect(mockPrismaService.conversation.findMany).toHaveBeenCalled();
+      expect(mockPrismaService.message.count).toHaveBeenCalled();
     });
   });
 

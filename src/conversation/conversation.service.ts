@@ -42,4 +42,43 @@ export class ConversationService {
       data: { deletedAt: new Date() },
     });
   }
+
+  async findAllWithUnreadCount(userId: string) {
+    const conversations = await this.findAll({
+      participants: { some: { userId, leftAt: null } },
+    });
+
+    return Promise.all(
+      conversations.map(async (conv) => {
+        const participant = conv.participants.find(
+          (p) => p.userId === userId && !p.leftAt,
+        );
+
+        let unreadCount = 0;
+
+        if (participant) {
+          const where: Prisma.MessageWhereInput = {
+            conversationId: conv.id,
+            deletedAt: null,
+            senderId: { not: userId },
+          };
+
+          if (participant.lastReadMessageId) {
+            const lastReadMessage = await this.prisma.message.findUnique({
+              where: { id: participant.lastReadMessageId },
+              select: { createdAt: true },
+            });
+
+            if (lastReadMessage) {
+              where.createdAt = { gt: lastReadMessage.createdAt };
+            }
+          }
+
+          unreadCount = await this.prisma.message.count({ where });
+        }
+
+        return { ...conv, unreadCount };
+      }),
+    );
+  }
 }

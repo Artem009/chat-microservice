@@ -24,11 +24,11 @@
 - [x] Create Message module with CRUD (R-015)
 - [x] Create Participant module with management endpoints (R-016)
 
-## Real-time — IN PROGRESS
+## Real-time — COMPLETE
 - [x] WebSocket gateway for real-time messaging (R-017)
+- [x] Read receipts tracking (R-018)
 
 ## Backlog — UNBLOCKED
-- [ ] Read receipts tracking (wf-read-receipts)
 - [ ] Typing indicators and online presence (wf-typing-presence)
 
 ## Session Notes

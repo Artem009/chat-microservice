@@ -40,4 +40,15 @@ export class ParticipantService {
       data: { leftAt: new Date() },
     });
   }
+
+  updateLastReadMessage(
+    conversationId: string,
+    userId: string,
+    lastReadMessageId: string,
+  ) {
+    return this.prisma.participant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      data: { lastReadMessageId },
+    });
+  }
 }

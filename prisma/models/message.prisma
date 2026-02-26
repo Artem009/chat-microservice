@@ -7,7 +7,8 @@ model Message {
   updatedAt      DateTime @updatedAt
   deletedAt      DateTime?
 
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation        Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  lastReadByParticipants Participant[] @relation("LastReadMessage")
 
   @@index([conversationId])
   @@index([senderId])
