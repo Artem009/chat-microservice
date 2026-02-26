@@ -5,20 +5,17 @@
 ## Now (Current Focus)
 <!-- PIN: now -->
 
-_No items._
+### Mentions (@mentions)
+- **Task:** wf-7ed59642
+- **Type:** feature
+- **Priority:** P2
+- **Tags:** #domain #mentions #notifications
+- **Description:** Parse @userId mentions in message content, create mention records, and notify mentioned users via WebSocket events. Promoted from Next on 2026-02-26.
 
 ---
 
 ## Next (Ready to Plan)
 <!-- PIN: next -->
-
-### Mentions (@mentions)
-- **Type:** feature
-- **Priority:** P2
-- **Tags:** #domain #mentions #notifications
-- **Description:** Parse @userId mentions in message content, create mention records, and notify mentioned users via WebSocket events.
-- **Depends On:** Message module, Participant module, WebSocket gateway
-- **Key Files:** src/mention/, prisma/models/mention.prisma
 
 ### Threads (Nested Conversations)
 - **Type:** feature
@@ -120,7 +117,7 @@ _No items yet._
     ├──→ [completed] message-module ──→ [completed] websocket-gateway ──→ [completed] read-receipts
     │                                                                 ──→ [completed] typing-presence
     │                                ──→ [completed] reactions wf-db336127
-    │                                ──→ [next] mentions (+ participant-module)
+    │                                ──→ [NOW] mentions wf-7ed59642 (+ participant-module)
     │                                ──→ [next] threads
     └──→ [completed] participant-module
 

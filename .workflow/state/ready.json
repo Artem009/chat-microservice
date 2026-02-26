@@ -1,7 +1,24 @@
 {
   "lastUpdated": "2026-02-26T11:01:12.595Z",
   "ready": [],
-  "inProgress": [],
+  "inProgress": [
+    {
+      "id": "wf-7ed59642",
+      "title": "Add @mentions in messages",
+      "type": "feature",
+      "priority": "P2",
+      "feature": "ft-engagement",
+      "tags": [
+        "#domain",
+        "#mentions",
+        "#notifications"
+      ],
+      "status": "in_progress",
+      "promotedFrom": "roadmap",
+      "promotedAt": "2026-02-26T15:10:00.000Z",
+      "startedAt": "2026-02-26T15:30:00.000Z"
+    }
+  ],
   "blocked": [],
   "recentlyCompleted": [
     {
