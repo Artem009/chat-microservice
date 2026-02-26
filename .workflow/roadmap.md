@@ -5,12 +5,7 @@
 ## Now (Current Focus)
 <!-- PIN: now -->
 
-### Mentions (@mentions)
-- **Task:** wf-7ed59642
-- **Type:** feature
-- **Priority:** P2
-- **Tags:** #domain #mentions #notifications
-- **Description:** Parse @userId mentions in message content, create mention records, and notify mentioned users via WebSocket events. Promoted from Next on 2026-02-26.
+_No items._
 
 ---
 
@@ -43,6 +38,12 @@ _No items yet._
 
 ## Completed
 <!-- PIN: completed -->
+
+### Add @mentions in messages
+- **Task:** wf-7ed59642
+- **Completed:** 2026-02-26
+- **Type:** feature
+- **Result:** Mention Prisma model with [messageId, mentionedUserId] unique constraint. mention-parser.ts pure function (extracts @<uuid>, dedup, case-normalize). GET /api/mention?messageId=&userId=. CreateMessageController integration: parse mentions, filter active participants, exclude sender, create records, broadcast userMentioned WebSocket event. 17 new tests (127 total).
 
 ### Add emoji reactions to messages
 - **Task:** wf-db336127
@@ -117,7 +118,7 @@ _No items yet._
     ├──→ [completed] message-module ──→ [completed] websocket-gateway ──→ [completed] read-receipts
     │                                                                 ──→ [completed] typing-presence
     │                                ──→ [completed] reactions wf-db336127
-    │                                ──→ [NOW] mentions wf-7ed59642 (+ participant-module)
+    │                                ──→ [completed] mentions wf-7ed59642 (+ participant-module)
     │                                ──→ [next] threads
     └──→ [completed] participant-module
 

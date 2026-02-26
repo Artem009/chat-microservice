@@ -19,6 +19,7 @@ Architecture follows reference patterns from comment-microservice.
 | ParticipantModule | Participant management (add/remove/role), imports PrismaModule | src/participant/participant.module.ts | Active |
 | ChatGatewayModule | WebSocket gateway for real-time messaging, exports ChatGateway | src/chat-gateway/chat-gateway.module.ts | Active |
 | ReactionModule | Emoji reactions on messages, imports PrismaModule + ChatGatewayModule + MessageModule | src/reaction/reaction.module.ts | Active |
+| MentionModule | @mentions in messages, imports PrismaModule | src/mention/mention.module.ts | Active |
 
 ## Controllers
 <!-- PIN: controllers -->
@@ -44,8 +45,9 @@ Architecture follows reference patterns from comment-microservice.
 | CreateReactionController | /api/reaction | POST | ReactionModule | src/reaction/controllers/create-reaction.controller.ts |
 | ListReactionController | /api/reaction | GET | ReactionModule | src/reaction/controllers/list-reaction.controller.ts |
 | DeleteReactionController | /api/reaction/:id | DELETE | ReactionModule | src/reaction/controllers/delete-reaction.controller.ts |
+| ListMentionController | /api/mention | GET | MentionModule | src/mention/controllers/list-mention.controller.ts |
 
-**Base classes:** `BaseController` — per-module base for feature controllers (`src/conversation/controllers/base.controller.ts`, `src/message/controllers/base.controller.ts`, `src/participant/controllers/base.controller.ts`, `src/reaction/controllers/base.controller.ts`)
+**Base classes:** `BaseController` — per-module base for feature controllers (`src/conversation/controllers/base.controller.ts`, `src/message/controllers/base.controller.ts`, `src/participant/controllers/base.controller.ts`, `src/reaction/controllers/base.controller.ts`, `src/mention/controllers/base.controller.ts`)
 
 ## Services
 <!-- PIN: services -->
@@ -58,13 +60,14 @@ Architecture follows reference patterns from comment-microservice.
 | MessageService | MessageModule | src/message/message.service.ts | Active |
 | ParticipantService | ParticipantModule | src/participant/participant.service.ts | Active |
 | ReactionService | ReactionModule | src/reaction/reaction.service.ts | Active |
+| MentionService | MentionModule | src/mention/mention.service.ts | Active |
 
 ## Gateways
 <!-- PIN: gateways -->
 
 | Gateway | Events | Module | File |
 |---------|--------|--------|------|
-| ChatGateway | joinConversation, leaveConversation, typing, stopTyping, newMessage (broadcast), userTyping (broadcast), userStoppedTyping (broadcast), presenceUpdate (broadcast), readReceipt (broadcast), reactionAdded (broadcast), reactionRemoved (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
+| ChatGateway | joinConversation, leaveConversation, typing, stopTyping, newMessage (broadcast), userTyping (broadcast), userStoppedTyping (broadcast), presenceUpdate (broadcast), readReceipt (broadcast), reactionAdded (broadcast), reactionRemoved (broadcast), userMentioned (broadcast) | ChatGatewayModule | src/chat-gateway/chat.gateway.ts |
 
 ## DTOs
 <!-- PIN: dto -->

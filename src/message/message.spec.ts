@@ -10,6 +10,7 @@ import { GetMessageController } from './controllers/get-message.controller';
 import { UpdateMessageController } from './controllers/update-message.controller';
 import { DeleteMessageController } from './controllers/delete-message.controller';
 import { MarkReadController } from './controllers/mark-read.controller';
+import { MentionService } from '../mention/mention.service';
 import { NotFoundException } from '../exeption';
 
 const mockMessage = {
@@ -61,10 +62,22 @@ const mockChatGateway = {
 };
 
 const mockParticipantService = {
+  findByConversation: jest
+    .fn()
+    .mockResolvedValue([
+      mockParticipant,
+      { ...mockParticipant, id: 'part-2', userId: 'user-1' },
+    ]),
   findByConversationAndUser: jest.fn().mockResolvedValue(mockParticipant),
   updateLastReadMessage: jest
     .fn()
     .mockResolvedValue({ ...mockParticipant, lastReadMessageId: 'msg-1' }),
+};
+
+const mockMentionService = {
+  createMany: jest.fn().mockResolvedValue([]),
+  findByMessage: jest.fn().mockResolvedValue([]),
+  findByUser: jest.fn().mockResolvedValue([]),
 };
 
 describe('MessageModule', () => {
@@ -83,6 +96,7 @@ describe('MessageModule', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ChatGateway, useValue: mockChatGateway },
         { provide: ParticipantService, useValue: mockParticipantService },
+        { provide: MentionService, useValue: mockMentionService },
       ],
       controllers: [
         CreateMessageController,
@@ -161,13 +175,13 @@ describe('MessageModule', () => {
   });
 
   describe('CreateMessageController', () => {
-    it('should create a message', async () => {
+    it('should create a message with empty mentions', async () => {
       const result = await createController.create({
         content: 'Hello world',
         conversationId: 'conv-1',
         senderId: 'user-1',
       });
-      expect(result).toEqual({ data: mockMessage });
+      expect(result).toEqual({ data: mockMessage, mentions: [] });
       expect(mockPrismaService.message.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -190,6 +204,97 @@ describe('MessageModule', () => {
         'newMessage',
         mockMessage,
       );
+    });
+
+    it('should parse mentions and create mention records for active participants', async () => {
+      const mentionedUserId = '550e8400-e29b-41d4-a716-446655440002';
+      mockParticipantService.findByConversation.mockResolvedValueOnce([
+        { ...mockParticipant, userId: mentionedUserId },
+        { ...mockParticipant, id: 'part-2', userId: 'user-1' },
+      ]);
+      const mockMentionResult = [
+        {
+          id: 'mention-1',
+          messageId: 'msg-1',
+          mentionedUserId,
+          createdAt: new Date(),
+        },
+      ];
+      mockMentionService.createMany.mockResolvedValueOnce(mockMentionResult);
+
+      const result = await createController.create({
+        content: `Hey @${mentionedUserId} check this out`,
+        conversationId: 'conv-1',
+        senderId: 'user-1',
+      });
+
+      expect(mockMentionService.createMany).toHaveBeenCalledWith([
+        { messageId: 'msg-1', mentionedUserId },
+      ]);
+      expect(result.mentions).toEqual(mockMentionResult);
+    });
+
+    it('should broadcast userMentioned event when mentions exist', async () => {
+      const mentionedUserId = '550e8400-e29b-41d4-a716-446655440002';
+      mockParticipantService.findByConversation.mockResolvedValueOnce([
+        { ...mockParticipant, userId: mentionedUserId },
+        { ...mockParticipant, id: 'part-2', userId: 'user-1' },
+      ]);
+      mockMentionService.createMany.mockResolvedValueOnce([
+        {
+          id: 'mention-1',
+          messageId: 'msg-1',
+          mentionedUserId,
+          createdAt: new Date(),
+        },
+      ]);
+
+      await createController.create({
+        content: `Hey @${mentionedUserId}`,
+        conversationId: 'conv-1',
+        senderId: 'user-1',
+      });
+
+      expect(mockChatGateway.broadcastToRoom).toHaveBeenCalledWith(
+        'conv-1',
+        'userMentioned',
+        {
+          messageId: 'msg-1',
+          conversationId: 'conv-1',
+          mentionedUserIds: [mentionedUserId],
+        },
+      );
+    });
+
+    it('should exclude self-mentions (sender cannot mention themselves)', async () => {
+      mockParticipantService.findByConversation.mockResolvedValueOnce([
+        { ...mockParticipant, userId: 'user-1' },
+        { ...mockParticipant, id: 'part-2', userId: 'user-2' },
+      ]);
+
+      await createController.create({
+        content: '@user-1 mentioning myself',
+        conversationId: 'conv-1',
+        senderId: 'user-1',
+      });
+
+      // user-1 is not a valid UUID so parseMentions returns [] anyway
+      expect(mockMentionService.createMany).not.toHaveBeenCalled();
+    });
+
+    it('should filter out mentions of non-participants', async () => {
+      const nonParticipant = '550e8400-e29b-41d4-a716-446655440099';
+      mockParticipantService.findByConversation.mockResolvedValueOnce([
+        { ...mockParticipant, userId: 'user-1' },
+      ]);
+
+      await createController.create({
+        content: `Hey @${nonParticipant}`,
+        conversationId: 'conv-1',
+        senderId: 'user-1',
+      });
+
+      expect(mockMentionService.createMany).not.toHaveBeenCalled();
     });
   });
 

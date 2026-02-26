@@ -1,7 +1,7 @@
 {
-  "lastActive": "2026-02-26T15:27:12.591Z",
+  "lastActive": "2026-02-26T15:38:14.377Z",
   "cliSessionId": "7775b79d-8e77-4dc9-816f-647c52a28841",
-  "currentTask": "wf-7ed59642",
+  "currentTask": null,
   "recentFiles": [],
   "recentDecisions": [],
   "contextSnapshot": {
@@ -17,7 +17,7 @@
   },
   "lastSessionSummary": null,
   "bypassTracking": {
-    "count": 35,
+    "count": 37,
     "attempts": [
       {
         "timestamp": "2026-02-23T15:06:51.264Z",
@@ -261,6 +261,20 @@
         "timestamp": "2026-02-26T15:07:46.904Z",
         "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/roadmap.md",
         "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T15:36:11.332Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/message/controllers/base.controller.ts",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-02-26T15:38:14.377Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/src/mention/mention.spec.ts",
+        "operation": "write",
         "reason": "no_task_auto_create_disabled",
         "taskId": null
       }

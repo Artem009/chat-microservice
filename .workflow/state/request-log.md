@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-021 | 2026-02-26
+**Type**: feature
+**Tags**: #domain #mentions #notifications #websocket
+**Request**: "Add @mentions in messages (wf-7ed59642)"
+**Result**: Created Mention Prisma model with unique constraint [messageId, mentionedUserId]. Added mentions relation on Message model. Created MentionModule with MentionService (createMany/findByMessage/findByUser), mention-parser.ts pure function (extracts @<uuid> patterns, deduplicates, case-normalizes). ListMentionController GET /api/mention?messageId=&userId= with Swagger @ApiQuery. Extended CreateMessageController to parse mentions from content, filter active participants (via ParticipantService.findByConversation), exclude sender, create Mention records, broadcast `userMentioned` WebSocket event. 17 new tests (127 total). All pass. TypeScript clean. Lint clean.
+**Files**: prisma/models/mention.prisma, prisma/models/message.prisma, src/mention/mention.module.ts, src/mention/mention.service.ts, src/mention/mention-parser.ts, src/mention/controllers/base.controller.ts, src/mention/controllers/list-mention.controller.ts, src/mention/mention.spec.ts, src/message/controllers/create-message.controller.ts, src/message/message.module.ts, src/message/message.spec.ts, src/app.module.ts
+
+---
+
 ### R-020 | 2026-02-26
 **Type**: feature
 **Tags**: #domain #reactions #messages #websocket

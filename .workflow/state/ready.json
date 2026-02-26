@@ -1,7 +1,9 @@
 {
-  "lastUpdated": "2026-02-26T11:01:12.595Z",
+  "lastUpdated": "2026-02-26T15:40:22.497Z",
   "ready": [],
-  "inProgress": [
+  "inProgress": [],
+  "blocked": [],
+  "recentlyCompleted": [
     {
       "id": "wf-7ed59642",
       "title": "Add @mentions in messages",
@@ -13,14 +15,12 @@
         "#mentions",
         "#notifications"
       ],
-      "status": "in_progress",
+      "status": "completed",
       "promotedFrom": "roadmap",
       "promotedAt": "2026-02-26T15:10:00.000Z",
-      "startedAt": "2026-02-26T15:30:00.000Z"
-    }
-  ],
-  "blocked": [],
-  "recentlyCompleted": [
+      "startedAt": "2026-02-26T15:30:00.000Z",
+      "completedAt": "2026-02-26T15:42:00.000Z"
+    },
     {
       "id": "wf-db336127",
       "title": "Add emoji reactions to messages",
@@ -146,33 +146,6 @@
       ],
       "status": "completed",
       "completedAt": "2026-02-24T16:33:36.872Z"
-    },
-    {
-      "id": "wf-fc80a97c",
-      "title": "Add Swagger example data with UUID examples to DTOs",
-      "type": "feature",
-      "priority": "P3",
-      "tags": [
-        "#swagger",
-        "#dto",
-        "#documentation"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-24T16:10:00.240Z"
-    },
-    {
-      "id": "wf-conversation-module",
-      "title": "Create Conversation module with CRUD",
-      "type": "feature",
-      "priority": "P1",
-      "feature": "ft-data-layer",
-      "tags": [
-        "#domain",
-        "#conversation",
-        "#crud"
-      ],
-      "status": "completed",
-      "completedAt": "2026-02-23T18:35:00.000Z"
     }
   ],
   "backlog": []
