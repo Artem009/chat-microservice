@@ -224,9 +224,7 @@ describe('WebSocket Gateway (e2e)', () => {
       // Need to get prisma mock from the app context
       // The broadcast happens inside CreateMessageController
       // We test the WS layer by directly calling broadcastToRoom
-      const { ChatGateway } = await import(
-        '../src/chat-gateway/chat.gateway'
-      );
+      const { ChatGateway } = await import('../src/chat-gateway/chat.gateway');
       const gateway = app.get(ChatGateway);
 
       const messagePromise = waitForMessage(ws1);
@@ -252,9 +250,7 @@ describe('WebSocket Gateway (e2e)', () => {
       });
       await joinPromise;
 
-      const { ChatGateway } = await import(
-        '../src/chat-gateway/chat.gateway'
-      );
+      const { ChatGateway } = await import('../src/chat-gateway/chat.gateway');
       const gateway = app.get(ChatGateway);
 
       const msgPromise = waitForMessage(ws);
@@ -282,9 +278,7 @@ describe('WebSocket Gateway (e2e)', () => {
       });
       await joinPromise;
 
-      const { ChatGateway } = await import(
-        '../src/chat-gateway/chat.gateway'
-      );
+      const { ChatGateway } = await import('../src/chat-gateway/chat.gateway');
       const gateway = app.get(ChatGateway);
 
       const msgPromise = waitForMessage(ws);
@@ -296,9 +290,7 @@ describe('WebSocket Gateway (e2e)', () => {
       const msg = await msgPromise;
 
       expect(msg.event).toBe('readReceipt');
-      expect(msg.data).toEqual(
-        expect.objectContaining({ userId: userId2 }),
-      );
+      expect(msg.data).toEqual(expect.objectContaining({ userId: userId2 }));
 
       ws.close();
     });
@@ -313,9 +305,7 @@ describe('WebSocket Gateway (e2e)', () => {
       });
       await joinPromise;
 
-      const { ChatGateway } = await import(
-        '../src/chat-gateway/chat.gateway'
-      );
+      const { ChatGateway } = await import('../src/chat-gateway/chat.gateway');
       const gateway = app.get(ChatGateway);
 
       const msgPromise = waitForMessage(ws);
@@ -345,9 +335,7 @@ describe('WebSocket Gateway (e2e)', () => {
       });
       await joinPromise;
 
-      const { ChatGateway } = await import(
-        '../src/chat-gateway/chat.gateway'
-      );
+      const { ChatGateway } = await import('../src/chat-gateway/chat.gateway');
       const gateway = app.get(ChatGateway);
 
       const msgPromise = waitForMessage(ws);
@@ -377,9 +365,7 @@ describe('WebSocket Gateway (e2e)', () => {
       });
       await joinPromise;
 
-      const { ChatGateway } = await import(
-        '../src/chat-gateway/chat.gateway'
-      );
+      const { ChatGateway } = await import('../src/chat-gateway/chat.gateway');
       const gateway = app.get(ChatGateway);
 
       const msgPromise = waitForMessage(ws);

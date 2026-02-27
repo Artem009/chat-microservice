@@ -12,6 +12,8 @@ Prisma models and database schema. **Check before creating new models.**
 | Conversation | conversations | UUID | deletedAt | prisma/models/conversation.prisma |
 | Message | messages | UUID | deletedAt | prisma/models/message.prisma |
 | Participant | participants | UUID | leftAt | prisma/models/participant.prisma |
+| Reaction | reactions | UUID | — (hard delete) | prisma/models/reaction.prisma |
+| Mention | mentions | UUID | — (hard delete) | prisma/models/mention.prisma |
 
 ## Enums
 <!-- PIN: enums -->
@@ -27,7 +29,11 @@ Prisma models and database schema. **Check before creating new models.**
 | From | To | Type | On Delete |
 |------|----|------|-----------|
 | Message | Conversation | Many-to-One | Cascade |
+| Message | Message (parent) | Many-to-One (self-ref) | SetNull |
 | Participant | Conversation | Many-to-One | Cascade |
+| Participant | Message (lastRead) | Many-to-One | SetNull |
+| Reaction | Message | Many-to-One | Cascade |
+| Mention | Message | Many-to-One | Cascade |
 
 ## Indexes
 
@@ -35,8 +41,16 @@ Prisma models and database schema. **Check before creating new models.**
 |-------|--------|------|
 | Message | conversationId | Index |
 | Message | senderId | Index |
+| Message | parentMessageId | Index |
 | Participant | userId | Index |
 | Participant | conversationId + userId | Unique |
+| Participant | lastReadMessageId | Index |
+| Reaction | messageId | Index |
+| Reaction | userId | Index |
+| Reaction | messageId + userId + emoji | Unique |
+| Mention | messageId | Index |
+| Mention | mentionedUserId | Index |
+| Mention | messageId + mentionedUserId | Unique |
 
 ## Schema Management
 

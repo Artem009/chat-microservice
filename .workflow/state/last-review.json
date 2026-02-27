@@ -1,0 +1,31 @@
+{
+  "reviewDate": "2026-02-27T14:00:00.000Z",
+  "mode": "parallel",
+  "agentsLaunched": 3,
+  "agentBreakdown": { "core": 3, "optional": 0, "projectRules": 0 },
+  "scope": "WogiFlow tooling files only (no src/ application code)",
+  "filesReviewed": 39,
+  "findings": [
+    { "id": "finding-001", "severity": "critical", "category": "architecture", "file": "scripts/hooks/entry/claude-code/task-completed.js", "line": 12, "issue": "Broken require path: ../../flow-utils should be ../../../flow-utils. Hook throws MODULE_NOT_FOUND.", "recommendation": "Fix path to ../../../flow-utils", "autoFixable": true, "agent": "architecture", "status": "unfixed" },
+    { "id": "finding-002", "severity": "high", "category": "code-logic", "file": "scripts/flow-long-input.js", "line": 128, "issue": "Stale config key 'transcriptDigestion' — always returns empty object", "recommendation": "Rename to current config key", "autoFixable": false, "agent": "code-logic", "status": "unfixed-upstream" },
+    { "id": "finding-003", "severity": "high", "category": "code-logic", "file": ".claude/settings.json", "line": 14, "issue": "Setup hook event not in Claude Code schema", "recommendation": "Remove Setup block from settings.json", "autoFixable": true, "agent": "code-logic", "status": "unfixed" },
+    { "id": "finding-004", "severity": "high", "category": "code-logic", "file": ".claude/settings.json", "line": 92, "issue": "ConfigChange hook event unverified/speculative", "recommendation": "Verify or remove from settings.json", "autoFixable": false, "agent": "code-logic", "status": "unfixed" },
+    { "id": "finding-005", "severity": "high", "category": "security", "file": "scripts/hooks/entry/claude-code/stop.js", "line": 27, "issue": "Raw JSON.parse on stdin — prototype pollution risk", "recommendation": "Use safeJsonParseString()", "autoFixable": true, "agent": "security", "status": "unfixed" },
+    { "id": "finding-006", "severity": "high", "category": "security", "file": "scripts/flow-long-input.js", "line": 127, "issue": "Multiple raw JSON.parse calls (6 instances)", "recommendation": "Use safeJsonParse() from flow-utils", "autoFixable": true, "agent": "security", "status": "unfixed-upstream" },
+    { "id": "finding-007", "severity": "high", "category": "security", "file": "scripts/flow-long-input.js", "line": 658, "issue": "Path traversal via digest_path — no isPathWithinProject() validation", "recommendation": "Add path.resolve() + isPathWithinProject() check", "autoFixable": false, "agent": "security", "status": "unfixed-upstream" },
+    { "id": "finding-008", "severity": "high", "category": "architecture", "file": ".workflow/config.json", "line": 25, "issue": "hooks.rules uses flat booleans but code reads .enabled (nested object)", "recommendation": "Expand to nested objects", "autoFixable": true, "agent": "architecture", "status": "unfixed" },
+    { "id": "finding-009", "severity": "medium", "category": "code-logic", "file": "scripts/flow-standards-gate.js", "line": 483, "issue": "Config mutation side-effect on getConfig() singleton", "recommendation": "Pass mode via options instead", "autoFixable": false, "agent": "code-logic", "status": "unfixed-upstream" },
+    { "id": "finding-010", "severity": "medium", "category": "security", "file": "scripts/hooks/core/session-context.js", "line": 505, "issue": "Prompt injection via log poisoning — unsanitized request strings in AI context", "recommendation": "Sanitize/truncate activity.request", "autoFixable": false, "agent": "security", "status": "unfixed-upstream" },
+    { "id": "finding-011", "severity": "medium", "category": "security", "file": "scripts/hooks/core/implementation-gate.js", "line": 345, "issue": "Prompt injection via quote escape in routing context", "recommendation": "Escape quotes in user prompt before interpolation", "autoFixable": true, "agent": "security", "status": "unfixed-upstream" },
+    { "id": "finding-012", "severity": "medium", "category": "security", "file": "scripts/flow-parallel.js", "line": 455, "issue": "Raw JSON.parse on ready.json", "recommendation": "Use safeJsonParse()", "autoFixable": true, "agent": "security", "status": "unfixed-upstream" },
+    { "id": "finding-013", "severity": "medium", "category": "architecture", "file": "scripts/flow-context-estimator.js", "line": 179, "issue": "Duplicate spec-file parsing logic across context-estimator and standards-gate", "recommendation": "Extract shared utility", "autoFixable": false, "agent": "architecture", "status": "unfixed-upstream" },
+    { "id": "finding-014", "severity": "low", "category": "code-logic", "file": "scripts/flow-context-estimator.js", "line": 257, "issue": "Spec chars formula uses /500 but docs say per 100 chars (5x underweight)", "recommendation": "Fix divisor to 100 or update docs", "autoFixable": true, "agent": "code-logic", "status": "unfixed-upstream" },
+    { "id": "finding-015", "severity": "low", "category": "code-logic", "file": "scripts/flow-extraction-review.js", "line": 101, "issue": "TOCTOU race condition (existsSync then readFileSync)", "recommendation": "Use try-catch only pattern", "autoFixable": true, "agent": "code-logic", "status": "unfixed-upstream" },
+    { "id": "finding-016", "severity": "low", "category": "code-logic", "file": "scripts/flow-parallel.js", "line": 499, "issue": "scores CLI command is no-op (empty array)", "recommendation": "Implement or remove command", "autoFixable": false, "agent": "code-logic", "status": "unfixed-upstream" },
+    { "id": "finding-017", "severity": "low", "category": "architecture", "file": "scripts/hooks/adapters/claude-code.js", "line": 43, "issue": "Dead transform methods for unsupported events (Setup, ConfigChange, Worktree*)", "recommendation": "Remove or document as pending", "autoFixable": false, "agent": "architecture", "status": "unfixed-upstream" },
+    { "id": "finding-018", "severity": "low", "category": "architecture", "file": "scripts/flow-extraction-review.js", "line": 21, "issue": "process.cwd() for paths instead of PATHS.root", "recommendation": "Use PATHS.root for cwd-independent resolution", "autoFixable": true, "agent": "architecture", "status": "unfixed-upstream" }
+  ],
+  "triaged": true,
+  "resolution": "dismissed-by-user",
+  "standardsViolations": { "mustFix": 2, "warnings": 45 }
+}

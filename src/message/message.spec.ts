@@ -589,9 +589,7 @@ describe('MessageModule', () => {
           parentMessageId: 'original-parent',
           conversationId: 'conv-1',
         };
-        mockPrismaService.message.findUnique.mockResolvedValueOnce(
-          nestedReply,
-        );
+        mockPrismaService.message.findUnique.mockResolvedValueOnce(nestedReply);
         mockPrismaService.message.create.mockResolvedValueOnce({
           ...mockReply,
           parentMessageId: 'original-parent',
@@ -657,8 +655,7 @@ describe('MessageModule', () => {
         const replies = [mockReply, { ...mockReply, id: 'reply-2' }];
         mockPrismaService.message.findMany.mockResolvedValueOnce(replies);
 
-        const result =
-          await listThreadController.listThread('parent-msg-1');
+        const result = await listThreadController.listThread('parent-msg-1');
 
         expect(result).toEqual({ data: replies });
         expect(mockPrismaService.message.findMany).toHaveBeenCalledWith({
@@ -670,8 +667,7 @@ describe('MessageModule', () => {
       it('should return empty array when no replies exist', async () => {
         mockPrismaService.message.findMany.mockResolvedValueOnce([]);
 
-        const result =
-          await listThreadController.listThread('parent-msg-1');
+        const result = await listThreadController.listThread('parent-msg-1');
 
         expect(result).toEqual({ data: [] });
       });

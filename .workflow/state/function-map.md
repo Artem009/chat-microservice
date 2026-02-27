@@ -20,6 +20,7 @@ Utility functions available for reuse. **Check before creating new utilities.**
 | Function | Purpose | File | Parameters |
 |----------|---------|------|------------|
 | LocalApiProperty | Conditionally show API field in Swagger (LOCAL mode only) | src/common/decorators/local-api-property.decorator.ts | (options: ApiPropertyOptions) |
+| parseMentions | Extract @<uuid> mentions from message content, deduplicate, case-normalize | src/mention/mention-parser.ts | (content: string) → string[] |
 
 ## Rules
 

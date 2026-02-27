@@ -4,6 +4,15 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-024 | 2026-02-27
+**Type**: change
+**Tags**: #rescan #sync
+**Request**: "Project rescan after external changes (/wogi-rescan)"
+**Result**: Synced WogiFlow state. Schema map: +2 models (Reaction, Mention), +4 relations, +8 indexes. API map: +5 endpoints (3 reaction, 1 mention, 1 thread). Function map: +1 utility (parseMentions). App map already current. 0 conflicts. Rescan count: 3.
+**Files**: .workflow/state/schema-map.md, .workflow/state/api-map.md, .workflow/state/function-map.md, .workflow/config.json
+
+---
+
 ### R-023 | 2026-02-26
 **Type**: feature
 **Tags**: #testing #e2e #quality

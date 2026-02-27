@@ -36,10 +36,17 @@ API endpoints and client functions. **Check before creating new endpoints.**
 | PATCH | /api/participant/:id | UpdateParticipantController | ParticipantService | src/participant/controllers/update-participant.controller.ts |
 | DELETE | /api/participant/:id | RemoveParticipantController | ParticipantService | src/participant/controllers/remove-participant.controller.ts |
 | POST | /api/message/read | MarkReadController | ParticipantService | src/message/controllers/mark-read.controller.ts |
+| GET | /api/message/thread/:parentMessageId | ListThreadController | MessageService | src/message/controllers/list-thread.controller.ts |
+| POST | /api/reaction | CreateReactionController | ReactionService | src/reaction/controllers/create-reaction.controller.ts |
+| GET | /api/reaction?messageId | ListReactionController | ReactionService | src/reaction/controllers/list-reaction.controller.ts |
+| DELETE | /api/reaction/:id | DeleteReactionController | ReactionService | src/reaction/controllers/delete-reaction.controller.ts |
+| GET | /api/mention?messageId&userId | ListMentionController | MentionService | src/mention/controllers/list-mention.controller.ts |
 
-**Auth:** All `/api/conversation`, `/api/message`, and `/api/participant` endpoints require `authorization` header.
+**Auth:** All `/api/conversation`, `/api/message`, `/api/participant`, `/api/reaction`, and `/api/mention` endpoints require `authorization` header.
 **Response format:** `{ data: ... }` envelope. DELETE also includes `message`.
 **Special:** POST /api/participant returns 409 ConflictException for duplicate active participants; supports rejoin for left participants.
+**Special:** POST /api/reaction returns 409 ConflictException for duplicate reactions (same user+message+emoji). Broadcasts `reactionAdded`/`reactionRemoved` via WebSocket.
+**Special:** POST /api/message auto-parses @mentions from content, creates Mention records, broadcasts `userMentioned` via WebSocket. Supports `parentMessageId` for thread replies (broadcasts `threadReply`).
 
 ## Client Functions
 
