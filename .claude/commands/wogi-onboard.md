@@ -1,3 +1,6 @@
+---
+description: "Analyze an existing project and set up workflow with full context"
+---
 Analyze an existing project and set up workflow with full context.
 
 Usage: `/wogi-onboard`
@@ -652,6 +655,52 @@ Display:
     // Check for conventional commits, ticket prefixes, etc.
     ```
 
+    **Model Routing Configuration:**
+
+    Present the user with a model routing choice using `AskUserQuestion`:
+
+    ```
+    How should WogiFlow route sub-tasks to AI models?
+
+    1. "Full Opus (Recommended)" — Maximum quality. All sub-agents use Opus.
+       Best for complex projects where quality matters most.
+
+    2. "Smart Routing" — Opus orchestrates, Sonnet handles implementation/review,
+       Haiku handles searches/lookups. Best quality-to-cost balance.
+       Preserves context window by offloading sub-tasks to lighter models.
+
+    3. "Custom" — Configure your own routing rules per task type.
+    ```
+
+    Based on choice:
+    - Option 1: Set `config.hybrid.enabled = false` (all tasks stay with current model)
+    - Option 2: Set `config.hybrid.enabled = true` with default routing table (already configured)
+    - Option 3: Set `config.hybrid.enabled = true` and guide user through per-task-type routing overrides
+
+    Display: `  Model routing...      ✓ [Smart Routing | Full Opus | Custom]`
+
+    **Community Knowledge Sync:**
+
+    Present opt-in question using `AskUserQuestion`:
+
+    ```
+    Would you like to share anonymized model performance data with the WogiFlow community?
+
+    What's shared: model ID, task type, iteration count, token usage, wall clock time
+    What's NOT shared: file paths, code, project names, task descriptions
+
+    You'll receive back: community-optimized model routing rules and capability scores.
+
+    1. "Enable (Recommended)" — Help improve WogiFlow for everyone
+    2. "Disable" — Keep all data local only
+    ```
+
+    Based on choice:
+    - Option 1: Set `config.communitySync.enabled = true`
+    - Option 2: Set `config.communitySync.enabled = false` (default)
+
+    Display: `  Community sync...     ✓ [Enabled | Disabled]`
+
     **Commit style detection:**
     ```bash
     git log --oneline -20 --format="%s"
@@ -691,6 +740,36 @@ Display:
 
 ---
 
+### Phase 6.5: Generate CLAUDE.md (CRITICAL)
+
+**Now that config.json exists, generate the full CLAUDE.md from templates.**
+
+This replaces the bootstrap CLAUDE.md (created by postinstall) with the complete version rendered from Handlebars templates using the project's actual config values.
+
+```bash
+npx flow bridge sync
+```
+
+This runs the bridge which:
+1. Reads `.workflow/config.json` (just created in Phase 6)
+2. Renders `.workflow/templates/claude-md.hbs` with config values
+3. Writes the full `CLAUDE.md` with all enforcement rules, file locations, and commands
+
+Display:
+```
+  CLAUDE.md...           ✓ Generated from templates (full version)
+```
+
+**If bridge sync fails:**
+- Log warning: `⚠️ CLAUDE.md generation failed: [error]. Bootstrap version remains.`
+- The bootstrap CLAUDE.md from postinstall still provides basic task gating
+- User can manually run `npx flow bridge sync` later
+
+**Why this step matters:**
+Without it, the user completes onboarding but CLAUDE.md is either missing or still the bootstrap version. The full CLAUDE.md contains file locations, quality gate configs, commit behavior rules, and natural language command detection — all essential for the full WogiFlow experience.
+
+---
+
 ### Phase 7: Summary
 
 Display:
@@ -718,6 +797,8 @@ Pattern extraction...    ✓ Found 18 patterns, 3 conflicts resolved
 Template extraction...   ✓ Found 4 templates (component, service, test, hook)
 
 ━━━ Generated Files ━━━
+
+CLAUDE.md                    # Full project instructions (from templates)
 
 .workflow/
   config.json              # Project configuration
@@ -778,6 +859,7 @@ You can:
 
 | File | Purpose |
 |------|---------|
+| `CLAUDE.md` | Full project instructions for Claude Code (generated from templates) |
 | `.workflow/config.json` | Project configuration (quality gates, temporal thresholds) |
 | `.workflow/context/stack.md` | Detected tech stack |
 | `.workflow/context/product.md` | Product description and features |

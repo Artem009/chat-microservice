@@ -1,9 +1,34 @@
 {
-  "lastUpdated": "2026-03-02T11:40:06.801Z",
+  "lastUpdated": "2026-03-02T12:51:04.331Z",
   "ready": [],
   "inProgress": [],
   "blocked": [],
   "recentlyCompleted": [
+    {
+      "id": "wf-d3ef9a96",
+      "title": "Participant E2E tests missing conversation mock after bugfix wf-caf5fe8e",
+      "type": "bug",
+      "priority": "P2",
+      "severity": "medium",
+      "discoveredFrom": "wf-caf5fe8e",
+      "status": "completed",
+      "createdAt": "2026-03-02T12:49:40.383Z",
+      "startedAt": "2026-03-02T12:49:40.384Z",
+      "completedAt": "2026-03-02T12:51:04.330Z"
+    },
+    {
+      "id": "wf-41fa2c18",
+      "title": "Rescan project and sync WogiFlow state",
+      "type": "change",
+      "priority": "P3",
+      "tags": [
+        "#rescan",
+        "#sync"
+      ],
+      "status": "completed",
+      "startedAt": "2026-03-02T12:30:31.057Z",
+      "completedAt": "2026-03-02T12:31:10.140Z"
+    },
     {
       "id": "wf-caf5fe8e",
       "title": "Missing conversation validation in AddParticipantController causes P2025",

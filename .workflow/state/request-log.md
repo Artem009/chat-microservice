@@ -4,6 +4,24 @@ This file tracks all changes made to the project.
 
 ---
 
+### R-027 | 2026-03-02
+**Type**: fix
+**Tags**: #bug #testing #e2e #module:participant
+**Request**: "Fix participant E2E tests failing after bugfix wf-caf5fe8e"
+**Result**: Added `prisma.conversation.findUnique` mock to 3 POST /api/participant tests. Bugfix wf-caf5fe8e added conversation validation but tests weren't updated. All 62 E2E tests now pass (7/7 suites).
+**Files**: test/participant.e2e-spec.ts
+
+---
+
+### R-026 | 2026-03-02
+**Type**: change
+**Tags**: #rescan #sync
+**Request**: "Project rescan after recent bugfix and package update"
+**Result**: Full codebase scan completed. All state files in sync — 8 modules, 21 controllers, 7 services, 20 endpoints, 5 Prisma models match registries. No conflicts. Updated config timestamps and decisions.md current state description. Rescan count: 4.
+**Files**: .workflow/config.json, .workflow/state/decisions.md, .workflow/state/request-log.md
+
+---
+
 ### R-025 | 2026-03-02
 **Type**: fix
 **Tags**: #bug #module:participant #prisma #validation

@@ -18,7 +18,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Import from parent scripts directory
-const { getConfig, PATHS, safeJsonParse, writeJson, withLock, validateTaskId } = require('../../flow-utils');
+const { getConfig, PATHS, safeJsonParse, writeJson, withLock, validateTaskId, archiveCompletedTasksToLog } = require('../../flow-utils');
 const { resetPhase, isPhaseGateEnabled } = require('./phase-gate');
 
 /**
@@ -101,8 +101,10 @@ async function handleTaskCompleted(input) {
       }
       ready.recentlyCompleted.unshift(completedTask);
 
-      // Keep recentlyCompleted trimmed to last 10
+      // Keep recentlyCompleted trimmed to last 10, archive overflow
       if (ready.recentlyCompleted.length > 10) {
+        const overflow = ready.recentlyCompleted.slice(10);
+        archiveCompletedTasksToLog(overflow);
         ready.recentlyCompleted = ready.recentlyCompleted.slice(0, 10);
       }
 
@@ -160,6 +162,38 @@ async function handleTaskCompleted(input) {
           console.error(`[Task Completed] History write failed: ${err.message}`);
         }
       }
+    }
+
+    // Record task performance stats (fire-and-forget)
+    try {
+      const { recordTaskCompletion } = require('../../flow-stats-collector');
+      const statsRecord = {
+        taskId: completedTask.id,
+        model: input.model || process.env.CLAUDE_MODEL || 'unknown',
+        taskType: completedTask.type || 'unknown',
+        iterations: input.iterations || 1,
+        firstAttemptPass: input.firstAttemptPass !== false,
+        tokenEstimate: input.tokenEstimate || 0,
+        wallClockMs: input.wallClockMs || 0,
+        qualityGateResults: input.qualityGateResults || [],
+        changedFiles: input.changedFiles || [],
+        scenarioCount: input.scenarioCount || 0
+      };
+      recordTaskCompletion(statsRecord).catch((err) => {
+        if (process.env.DEBUG) {
+          console.error(`[Task Completed] Stats recording failed: ${err.message}`);
+        }
+      });
+    } catch {
+      // Non-critical - stats collector may not be available
+    }
+
+    // Clear task checkpoint after completion (fire-and-forget)
+    try {
+      const { clearCheckpoint } = require('../../flow-task-checkpoint');
+      clearCheckpoint(completedTask.id);
+    } catch {
+      // Non-critical - checkpoint may not exist
     }
 
     // Mark all non-rejected observations for this task as committed (fire-and-forget)

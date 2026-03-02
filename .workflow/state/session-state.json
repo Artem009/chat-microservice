@@ -1,7 +1,10 @@
 {
-  "lastActive": "2026-02-27T17:11:23.833Z",
-  "cliSessionId": "4632ca5a-b37d-4c9c-852f-f06ee3a615c2",
-  "currentTask": null,
+  "lastActive": "2026-03-02T12:49:45.455Z",
+  "cliSessionId": "abcf4be0-3ab4-4a33-b656-0412c9cea9be",
+  "currentTask": {
+    "id": "wf-d3ef9a96",
+    "startedAt": "2026-03-02T12:49:45.453Z"
+  },
   "recentFiles": [],
   "recentDecisions": [],
   "contextSnapshot": {
@@ -17,7 +20,7 @@
   },
   "lastSessionSummary": null,
   "bypassTracking": {
-    "count": 39,
+    "count": 42,
     "attempts": [
       {
         "timestamp": "2026-02-23T15:06:51.264Z",
@@ -287,6 +290,27 @@
       },
       {
         "timestamp": "2026-02-27T11:37:11.087Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/config.json",
+        "operation": "edit",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-03-02T11:28:52.651Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/bugs/wf-caf5fe8e.md",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-03-02T11:39:36.219Z",
+        "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/corrections/wf-caf5fe8e-correction-1.md",
+        "operation": "write",
+        "reason": "no_task_auto_create_disabled",
+        "taskId": null
+      },
+      {
+        "timestamp": "2026-03-02T12:30:17.136Z",
         "filePath": "/home/artem/Стільниця/2026/02/Projects/chat-microservice-2/.workflow/config.json",
         "operation": "edit",
         "reason": "no_task_auto_create_disabled",

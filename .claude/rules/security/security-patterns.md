@@ -77,24 +77,24 @@ When configuring permission rules in Claude Code, avoid overly permissive wildca
 
 **Vulnerability fixed in 2.1.7**: Wildcard permission rules could match compound commands containing shell operators (`;`, `&&`, `||`, `|`).
 
+**Destructive git commands** must NOT be auto-allowed. WogiFlow's `generateSettings()` scopes these to safe variants:
+
 ```javascript
-// DANGEROUS - could match "npm test && rm -rf /"
-"allow": "npm *"
+// DANGEROUS - auto-allows destructive operations
+"allow": "Bash(git reset *)"    // matches git reset --hard
+"allow": "Bash(git restore *)"  // matches git restore . (discard all)
+"allow": "Bash(git clean *)"    // matches git clean -f
 
-// SAFER - be specific about allowed commands
-"allow": "npm test"
-"allow": "npm run build"
-"allow": "npm install"
-
-// BEST - use semantic prompts instead of wildcards
-// In ExitPlanMode allowedPrompts:
-{ "tool": "Bash", "prompt": "run tests" }
-{ "tool": "Bash", "prompt": "install dependencies" }
+// SAFE - only non-destructive variants auto-allowed
+"allow": "Bash(git reset HEAD *)"       // unstage files only
+"allow": "Bash(git reset --soft *)"     // soft reset, preserves changes
+"allow": "Bash(git restore --staged *)" // unstage files only
+// git reset --hard, git restore ., git clean -f require manual approval
 ```
 
 **Best practices:**
-- Avoid `*` wildcards in permission rules
-- Use specific command patterns
+- Scope destructive commands to safe variants instead of blanket wildcards
+- `git reset --hard`, `git restore .`, `git clean -f` should always require user approval
 - Prefer semantic permission prompts over literal command matching
 - Never allow broad patterns like `rm *` or `git *`
 - Review permission rules after Claude Code updates
