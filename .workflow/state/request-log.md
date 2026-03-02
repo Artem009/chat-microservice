@@ -9,6 +9,7 @@ This file tracks all changes made to the project.
 **Tags**: #bug #module:participant #prisma #validation
 **Request**: "Bug: POST /api/participant throws P2025 when conversationId doesn't exist"
 **Result**: Added conversation existence validation to AddParticipantController before Prisma create. Injected ConversationService into BaseController. Returns 404 instead of 500 for non-existent/deleted conversations. Added 2 new unit tests. All 141 tests pass. (wf-caf5fe8e)
+**Correction**: [wf-caf5fe8e-correction-1](../corrections/wf-caf5fe8e-correction-1.md)
 **Files**: src/participant/controllers/add-participant.controller.ts, src/participant/controllers/base.controller.ts, src/participant/controllers/list-participant.controller.ts, src/participant/controllers/update-participant.controller.ts, src/participant/controllers/remove-participant.controller.ts, src/participant/participant.module.ts, src/participant/participant.spec.ts
 
 ---
