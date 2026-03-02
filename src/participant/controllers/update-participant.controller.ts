@@ -2,6 +2,7 @@ import { Body, Controller, Param, Patch } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { BaseController } from './base.controller';
 import { ParticipantService } from '../participant.service';
+import { ConversationService } from '../../conversation/conversation.service';
 import { UpdateParticipantDto } from '../dto/update-participant.dto';
 import { NotFoundException } from '../../exeption';
 
@@ -9,8 +10,11 @@ import { NotFoundException } from '../../exeption';
 @ApiSecurity('authorization')
 @Controller('api/participant')
 export class UpdateParticipantController extends BaseController {
-  constructor(participantService: ParticipantService) {
-    super(participantService);
+  constructor(
+    participantService: ParticipantService,
+    conversationService: ConversationService,
+  ) {
+    super(participantService, conversationService);
   }
 
   @Patch(':id')

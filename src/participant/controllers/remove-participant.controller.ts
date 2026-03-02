@@ -2,14 +2,18 @@ import { Controller, Delete, Param } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { BaseController } from './base.controller';
 import { ParticipantService } from '../participant.service';
+import { ConversationService } from '../../conversation/conversation.service';
 import { NotFoundException } from '../../exeption';
 
 @ApiTags('participant')
 @ApiSecurity('authorization')
 @Controller('api/participant')
 export class RemoveParticipantController extends BaseController {
-  constructor(participantService: ParticipantService) {
-    super(participantService);
+  constructor(
+    participantService: ParticipantService,
+    conversationService: ConversationService,
+  ) {
+    super(participantService, conversationService);
   }
 
   @Delete(':id')

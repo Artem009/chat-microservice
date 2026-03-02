@@ -2,13 +2,17 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { BaseController } from './base.controller';
 import { ParticipantService } from '../participant.service';
+import { ConversationService } from '../../conversation/conversation.service';
 
 @ApiTags('participant')
 @ApiSecurity('authorization')
 @Controller('api/participant')
 export class ListParticipantController extends BaseController {
-  constructor(participantService: ParticipantService) {
-    super(participantService);
+  constructor(
+    participantService: ParticipantService,
+    conversationService: ConversationService,
+  ) {
+    super(participantService, conversationService);
   }
 
   @Get()

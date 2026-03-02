@@ -2,11 +2,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ParticipantService } from './participant.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConversationService } from '../conversation/conversation.service';
 import { AddParticipantController } from './controllers/add-participant.controller';
 import { ListParticipantController } from './controllers/list-participant.controller';
 import { UpdateParticipantController } from './controllers/update-participant.controller';
 import { RemoveParticipantController } from './controllers/remove-participant.controller';
 import { ConflictException, NotFoundException } from '../exeption';
+
+const mockConversation = {
+  id: 'conv-1',
+  title: 'Test Chat',
+  type: 'GROUP',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null,
+  participants: [],
+  messages: [],
+};
 
 const mockParticipant = {
   id: 'part-1',
@@ -34,6 +46,10 @@ const mockPrismaService = {
   },
 };
 
+const mockConversationService = {
+  findOne: jest.fn().mockResolvedValue(mockConversation),
+};
+
 describe('ParticipantModule', () => {
   let service: ParticipantService;
   let addController: AddParticipantController;
@@ -46,6 +62,7 @@ describe('ParticipantModule', () => {
       providers: [
         ParticipantService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: ConversationService, useValue: mockConversationService },
       ],
       controllers: [
         AddParticipantController,
@@ -145,6 +162,7 @@ describe('ParticipantModule', () => {
 
   describe('AddParticipantController', () => {
     it('should add a new participant', async () => {
+      mockConversationService.findOne.mockResolvedValueOnce(mockConversation);
       mockPrismaService.participant.findUnique.mockResolvedValueOnce(null);
       const result = await addController.add({
         conversationId: 'conv-1',
@@ -155,6 +173,7 @@ describe('ParticipantModule', () => {
     });
 
     it('should throw ConflictException for active duplicate', async () => {
+      mockConversationService.findOne.mockResolvedValueOnce(mockConversation);
       mockPrismaService.participant.findUnique.mockResolvedValueOnce(
         mockParticipant,
       );
@@ -167,6 +186,7 @@ describe('ParticipantModule', () => {
     });
 
     it('should rejoin a participant who left', async () => {
+      mockConversationService.findOne.mockResolvedValueOnce(mockConversation);
       mockPrismaService.participant.findUnique.mockResolvedValueOnce({
         ...mockParticipant,
         leftAt: new Date(),
@@ -177,6 +197,29 @@ describe('ParticipantModule', () => {
       });
       expect(result).toEqual({ data: mockParticipant });
       expect(mockPrismaService.participant.update).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when conversation not found', async () => {
+      mockConversationService.findOne.mockResolvedValueOnce(null);
+      await expect(
+        addController.add({
+          conversationId: 'nonexistent',
+          userId: 'user-1',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw NotFoundException when conversation is soft-deleted', async () => {
+      mockConversationService.findOne.mockResolvedValueOnce({
+        ...mockConversation,
+        deletedAt: new Date(),
+      });
+      await expect(
+        addController.add({
+          conversationId: 'conv-1',
+          userId: 'user-1',
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
