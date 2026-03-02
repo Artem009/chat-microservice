@@ -37,6 +37,14 @@ describe('Participant (e2e)', () => {
 
   describe('POST /api/participant', () => {
     it('should add a participant and return 201', async () => {
+      prisma.conversation.findUnique.mockResolvedValue({
+        id: conversationId,
+        title: 'Test',
+        type: 'GROUP',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      });
       prisma.participant.findUnique.mockResolvedValue(null);
       prisma.participant.create.mockResolvedValue(mockParticipant);
 
@@ -58,6 +66,14 @@ describe('Participant (e2e)', () => {
     });
 
     it('should re-add a previously left participant', async () => {
+      prisma.conversation.findUnique.mockResolvedValue({
+        id: conversationId,
+        title: 'Test',
+        type: 'GROUP',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      });
       const leftParticipant = { ...mockParticipant, leftAt: new Date() };
       prisma.participant.findUnique.mockResolvedValue(leftParticipant);
       prisma.participant.update.mockResolvedValue(mockParticipant);
@@ -77,6 +93,14 @@ describe('Participant (e2e)', () => {
     });
 
     it('should return 409 when user is already an active participant', async () => {
+      prisma.conversation.findUnique.mockResolvedValue({
+        id: conversationId,
+        title: 'Test',
+        type: 'GROUP',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      });
       prisma.participant.findUnique.mockResolvedValue(mockParticipant);
 
       const response = await app.inject({
